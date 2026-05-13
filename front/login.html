@@ -179,7 +179,7 @@
     }
   }
 
-  function handleLogin() {
+  async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
     const errorEl = document.getElementById('loginError');
@@ -193,7 +193,7 @@
     }
 
     try {
-      const user = loginUser(email, password);
+      const user = await loginUser(email, password);
       setCurrentUser(user);
       showToast('Добро пожаловать, ' + user.name + '! 🐾', 'success');
 
@@ -214,7 +214,7 @@
     }
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     const name = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const phone = document.getElementById('regPhone').value.trim();
@@ -256,7 +256,7 @@
     }
 
     try {
-      const user = registerUser({ name, email, password, phone });
+      const user = await registerUser({ name, email, password, phone });
       setCurrentUser(user);
       showToast('Аккаунт создан! Добро пожаловать, ' + name + '! 🎉', 'success');
       setTimeout(() => { window.location.href = 'index.html'; }, 1000);

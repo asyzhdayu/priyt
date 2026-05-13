@@ -320,7 +320,7 @@
     });
   });
 
-  function submitSurrenderForm() {
+  async function submitSurrenderForm() {
     const errorEl = document.getElementById('surrenderError');
     errorEl.style.display = 'none';
 
@@ -348,7 +348,7 @@
     const user = getCurrentUser();
 
     // Save pet to catalog
-    const newPet = addPet({
+    const newPet = await addPet({
       name,
       species,
       breed: document.getElementById('sBreed').value.trim() || 'Беспородный',
@@ -365,10 +365,10 @@
     });
 
     // Save application
-    addApplication({
+    await addApplication({
       type: 'surrender',
       userId: user?.id || null,
-      petId: newPet.id,
+      petId: newPet.id || newPet._id,
       petName: name,
       userName: ownerName,
       userEmail: ownerEmail,

@@ -243,8 +243,8 @@
     searchPets('');
   });
 
-  function searchPets(query) {
-    const pets = filterPets({ search: query, status: 'available', sort: 'name' });
+  async function searchPets(query) {
+    const pets = await filterPets({ search: query, status: 'available', sort: 'name' });
     const container = document.getElementById('petSearchResults');
 
     if (pets.length === 0) {
@@ -269,9 +269,9 @@
     `).join('');
   }
 
-  function selectPet(petId) {
+  async function selectPet(petId) {
     selectedPetId = petId;
-    const pet = getPetById(petId);
+    const pet = await getPetById(petId);
     if (!pet) return;
 
     // Update banner
@@ -342,7 +342,7 @@
     return true;
   }
 
-  function submitAdoptForm() {
+  async function submitAdoptForm() {
     const message = document.getElementById('aMessage').value.trim();
     const confirm = document.getElementById('aConfirm').checked;
     const errorEl = document.getElementById('adoptError');
@@ -368,9 +368,9 @@
       return;
     }
 
-    const pet = selectedPetId ? getPetById(selectedPetId) : null;
+    const pet = selectedPetId ? await getPetById(selectedPetId) : null;
 
-    const app = addApplication({
+    const app = await addApplication({
       type: 'adopt',
       userId: user.id,
       petId: selectedPetId || null,
@@ -388,7 +388,7 @@
 
     // Mark pet as reserved if selected
     if (selectedPetId && pet?.status === 'available') {
-      updatePet(selectedPetId, { status: 'reserved' });
+      await updatePet(selectedPetId, { status: 'reserved' });
     }
 
     // Show success

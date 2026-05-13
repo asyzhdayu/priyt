@@ -265,9 +265,9 @@
     if (tab === 'favs') loadFavs();
   }
 
-  function loadApps() {
+  async function loadApps() {
     const list = document.getElementById('appsList');
-    const apps = getUserApplications(currentUser.id);
+    const apps = await getUserApplications(currentUser.id);
 
     if (apps.length === 0) {
       list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>Заявок пока нет</h3><p>Подай заявку на усыновление или передачу животного</p><a href="adopt.html" class="btn btn-primary" style="margin-top:16px">Взять питомца</a></div>`;
@@ -294,16 +294,16 @@
     }).join('');
   }
 
-  function loadFavs() {
+  async function loadFavs() {
     const list = document.getElementById('favsList');
-    const favIds = getFavorites();
+    const favIds = await getFavorites();
 
     if (favIds.length === 0) {
       list.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❤️</div><h3>Избранное пусто</h3><p>Добавляй понравившихся питомцев в избранное</p><a href="index.html#catalog" class="btn btn-primary" style="margin-top:16px">Смотреть питомцев</a></div>`;
       return;
     }
 
-    const pets = favIds.map(id => getPetById(id)).filter(Boolean);
+    const pets = (await Promise.all(favIds.map(id => getPetById(id).catch(() => null)))).filter(Boolean);
 
     if (pets.length === 0) {
       list.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❤️</div><h3>Питомцы не найдены</h3></div>`;
@@ -324,7 +324,7 @@
     `).join('');
   }
 
-  function saveProfile() {
+  async function saveProfile() {
     const msgEl = document.getElementById('profileMsg');
     const name = document.getElementById('pName').value.trim();
     const phone = document.getElementById('pPhone').value.trim();
@@ -340,44 +340,33 @@
       return;
     }
 
-    const users = getUsers();
-    const idx = users.findIndex(u => u.id === currentUser.id);
-    if (idx === -1) return;
-
-    if (pwdOld || pwdNew) {
-      if (users[idx].password !== pwdOld) {
-        msgEl.textContent = 'Текущий пароль неверный';
-        msgEl.style.color = 'var(--error)';
-        msgEl.style.display = 'block';
-        return;
-      }
-      if (pwdNew.length < 6) {
-        msgEl.textContent = 'Новый пароль должен быть не менее 6 символов';
-        msgEl.style.color = 'var(--error)';
-        msgEl.style.display = 'block';
-        return;
-      }
-      users[idx].password = pwdNew;
+    if (pwdNew && pwdNew.length < 6) {
+      msgEl.textContent = 'Новый пароль должен быть не менее 6 символов';
+      msgEl.style.color = 'var(--error)';
+      msgEl.style.display = 'block';
+      return;
     }
 
-    users[idx].name = name;
-    users[idx].phone = phone;
-    saveUsers(users);
+    try {
+      const updates = { name, phone };
+      if (pwdOld && pwdNew) { updates.passwordOld = pwdOld; updates.passwordNew = pwdNew; }
+      const updated = await updateProfile(updates);
+      currentUser = updated;
 
-    // Update session
-    const updated = { ...currentUser, name, phone };
-    setCurrentUser(updated);
-    currentUser = updated;
+      document.getElementById('profileName').textContent = name;
+      document.querySelector('.nav-username').textContent = name.split(' ')[0];
+      document.getElementById('pPwdOld').value = '';
+      document.getElementById('pPwdNew').value = '';
 
-    document.getElementById('profileName').textContent = name;
-    document.querySelector('.nav-username').textContent = name.split(' ')[0];
-    document.getElementById('pPwdOld').value = '';
-    document.getElementById('pPwdNew').value = '';
-
-    msgEl.textContent = '✅ Данные успешно сохранены';
-    msgEl.style.color = 'var(--success)';
-    msgEl.style.display = 'block';
-    showToast('Профиль обновлён', 'success');
+      msgEl.textContent = '✅ Данные успешно сохранены';
+      msgEl.style.color = 'var(--success)';
+      msgEl.style.display = 'block';
+      showToast('Профиль обновлён', 'success');
+    } catch (e) {
+      msgEl.textContent = e.message;
+      msgEl.style.color = 'var(--error)';
+      msgEl.style.display = 'block';
+    }
   }
 
   function handleLogout() {

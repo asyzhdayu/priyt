@@ -440,9 +440,9 @@
   });
 
   // ── Stats ────────────────────────────────────────────────
-  function loadStats() {
-    const s = getStats();
-    const apps = getApplications();
+  async function loadStats() {
+    const s = await getStats();
+    const apps = await getApplications();
     const pending = apps.filter(a => a.status === 'pending').length;
 
     const items = [
@@ -452,7 +452,8 @@
       { icon: '📋', num: pending,     label: 'Новых заявок' },
     ];
     if (currentStaff.role === 'admin') {
-      items.push({ icon: '👥', num: getUsers().length, label: 'Пользователей' });
+      const users = await getUsers();
+      items.push({ icon: '👥', num: users.length, label: 'Пользователей' });
     }
     document.getElementById('adminStats').innerHTML = items.map(i => `
       <div class="stat-card">
@@ -473,10 +474,10 @@
   }
 
   // ── Pets ─────────────────────────────────────────────────
-  function loadPets() {
+  async function loadPets() {
     const q  = (document.getElementById('petQ').value || '').toLowerCase();
     const sf = document.getElementById('petStatusF').value;
-    let pets = getPets();
+    let pets = await getPets();
     if (q)          pets = pets.filter(p => p.name.toLowerCase().includes(q) || p.breed.toLowerCase().includes(q));
     if (sf !== 'all') pets = pets.filter(p => p.status === sf);
 
@@ -511,10 +512,10 @@
   }
 
   // ── Apps ─────────────────────────────────────────────────
-  function loadApps() {
+  async function loadApps() {
     const tf = document.getElementById('appTypeF').value;
     const sf = document.getElementById('appStatusF').value;
-    let apps = getApplications();
+    let apps = await getApplications();
     if (tf !== 'all') apps = apps.filter(a => a.type === tf);
     if (sf !== 'all') apps = apps.filter(a => a.status === sf);
 
@@ -558,14 +559,15 @@
     `).join('');
   }
 
-  function setAppStatus(id, status) {
-    updateApplication(id, { status });
+  async function setAppStatus(id, status) {
+    await updateApplication(id, { status });
     showToast(status === 'approved' ? '✅ Заявка одобрена' : 'Заявка отклонена', status === 'approved' ? 'success' : 'info');
     loadApps(); loadStats();
   }
 
-  function openAppDetail(id) {
-    const a = getApplications().find(x => x.id === id);
+  async function openAppDetail(id) {
+    const apps = await getApplications();
+    const a = apps.find(x => x.id === id);
     if (!a) return;
 
     const sLabel = { pending: '⏳ На рассмотрении', approved: '✅ Одобрена', rejected: '❌ Отклонена' };
@@ -631,11 +633,12 @@
   }
 
   // ── Users ────────────────────────────────────────────────
-  function loadUsers() {
+  async function loadUsers() {
     const rLabel = { admin: '⚙️ Администратор', manager: '📋 Менеджер', user: '👤 Пользователь' };
     const rBadge = { admin: 'badge-admin', manager: 'badge-manager', user: 'badge-user' };
     const tbody = document.getElementById('usersBody');
-    tbody.innerHTML = getUsers().map(u => `
+    const users = await getUsers();
+    tbody.innerHTML = users.map(u => `
       <tr>
         <td><strong>${u.name}</strong></td>
         <td>${u.email}</td>
@@ -674,8 +677,8 @@
     openM('petModal');
   }
 
-  function openEditPet(id) {
-    const p = getPetById(id);
+  async function openEditPet(id) {
+    const p = await getPetById(id);
     if (!p) return;
     editingPetId = id; petPhotoData = p.photo || null;
     document.getElementById('petModalTitle').textContent = 'Редактировать: ' + p.name;
@@ -698,7 +701,7 @@
     openM('petModal');
   }
 
-  function savePet() {
+  async function savePet() {
     const errEl = document.getElementById('petFormErr');
     errEl.style.display = 'none';
     const name = document.getElementById('pfName').value.trim();
@@ -717,16 +720,16 @@
       featured: document.getElementById('pfFeat').checked,
       photo: petPhotoData
     };
-    if (editingPetId) { updatePet(editingPetId, data); showToast('Питомец обновлён ✅', 'success'); }
-    else              { addPet(data);                   showToast('Питомец добавлен ✅', 'success'); }
+    if (editingPetId) { await updatePet(editingPetId, data); showToast('Питомец обновлён ✅', 'success'); }
+    else              { await addPet(data);                   showToast('Питомец добавлен ✅', 'success'); }
     closeM('petModal'); loadPets(); loadStats();
   }
 
-  function deletePetConfirm(id) {
-    const p = getPetById(id);
+  async function deletePetConfirm(id) {
+    const p = await getPetById(id);
     if (!p) return;
     if (confirm(`Удалить питомца «${p.name}»? Это нельзя отменить.`)) {
-      deletePet(id); showToast('Питомец удалён', 'info'); loadPets(); loadStats();
+      await deletePet(id); showToast('Питомец удалён', 'info'); loadPets(); loadStats();
     }
   }
 
@@ -745,8 +748,9 @@
     openM('userModal');
   }
 
-  function openEditUser(id) {
-    const u = getUserById(id);
+  async function openEditUser(id) {
+    const users = await getUsers();
+    const u = users.find(x => (x.id || x._id) === id);
     if (!u) return;
     editingUserId = id;
     document.getElementById('userModalTitle').textContent = 'Редактировать: ' + u.name;
@@ -761,7 +765,7 @@
     openM('userModal');
   }
 
-  function saveUser() {
+  async function saveUser() {
     const errEl = document.getElementById('userFormErr');
     errEl.style.display = 'none';
     const name     = document.getElementById('ufName').value.trim();
@@ -778,23 +782,23 @@
           if (password.length < 6) { errEl.textContent = 'Пароль минимум 6 символов'; errEl.style.display = 'block'; return; }
           upd.password = password;
         }
-        updateUser(editingUserId, upd);
-        if (editingUserId === currentStaff.id) setCurrentUser(getUserById(editingUserId));
+        await apiFetch('/api/users/' + editingUserId, { method: 'PUT', body: JSON.stringify(upd) });
         showToast('Пользователь обновлён ✅', 'success');
       } else {
         if (!password || password.length < 6) { errEl.textContent = 'Задай пароль (минимум 6 символов)'; errEl.style.display = 'block'; return; }
-        createUser({ name, email, password, phone, role });
+        await createUser({ name, email, password, phone, role });
         showToast('Пользователь создан ✅', 'success');
       }
       closeM('userModal'); loadUsers(); loadStats();
     } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
   }
 
-  function deleteUserConfirm(id) {
-    const u = getUserById(id);
+  async function deleteUserConfirm(id) {
+    const users = await getUsers();
+    const u = users.find(x => (x.id || x._id) === id);
     if (!u) return;
     if (confirm(`Удалить пользователя «${u.name}» (${u.email})?`)) {
-      deleteUser(id); showToast('Пользователь удалён', 'info'); loadUsers(); loadStats();
+      await deleteUser(id); showToast('Пользователь удалён', 'info'); loadUsers(); loadStats();
     }
   }
 

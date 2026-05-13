@@ -345,8 +345,8 @@
     document.getElementById('searchInput')?.addEventListener('input', debounce(applyFilters, 400));
   });
 
-  function updateHeroStats() {
-    const stats = getStats();
+  async function updateHeroStats() {
+    const stats = await getStats();
     document.getElementById('heroTotal').textContent = stats.total;
     document.getElementById('heroAvail').textContent = stats.available;
     document.getElementById('heroAdopted').textContent = stats.adopted;
@@ -368,12 +368,12 @@
     loadCatalog();
   }
 
-  function loadCatalog() {
+  async function loadCatalog() {
     const grid = document.getElementById('petsGrid');
     const countEl = document.getElementById('resultsCount');
     if (!grid) return;
 
-    const pets = filterPets(filters);
+    const pets = await filterPets(filters);
 
     if (countEl) {
       countEl.textContent = pets.length === 0
