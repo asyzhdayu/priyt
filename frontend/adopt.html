@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Взять питомца — ПриютДома</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">
+    <div class="brand-icon">🐾</div>
+    ПриютДома
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="index.html" class="nav-link">Главная</a></li>
+    <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
+    <li><a href="adopt.html" class="nav-link active">Взять животное</a></li>
+    <li><a href="surrender.html" class="nav-link">Отдать животное</a></li>
+  </ul>
+  <div class="navbar-actions">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <div id="navAuth" style="display:flex;gap:8px">
+      <a href="login.html" class="btn btn-ghost btn-sm">Войти</a>
+    </div>
+    <div id="navProfile" style="display:none;align-items:center;gap:10px">
+      <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
+      <button class="btn btn-outline btn-sm" onclick="logout();location.href='index.html'">Выйти</button>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" class="nav-link">🏠 Главная</a>
+  <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
+  <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
+  <a href="surrender.html" class="nav-link">🏡 Отдать животное</a>
+</div>
+
+<!-- HERO MINI -->
+<div style="background:linear-gradient(135deg,rgba(196,98,45,.08),rgba(91,123,94,.06));padding:120px 0 48px;border-bottom:1px solid var(--cream-dark)">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:16px">❤️ Усыновление</div>
+    <h1 style="margin-bottom:12px">Хочу взять питомца домой</h1>
+    <p style="color:var(--brown-mid);max-width:520px;font-size:1.05rem">Заполни анкету, и мы свяжемся с тобой в течение 1–2 рабочих дней. Расскажи нам о себе — мы хотим убедиться, что питомец попадёт в самые лучшие руки.</p>
+  </div>
+</div>
+
+<!-- SELECTED PET BANNER -->
+<div id="selectedPetBanner" style="display:none;background:var(--white);border-bottom:1px solid var(--cream-dark)">
+  <div class="container" style="padding:20px 24px;display:flex;align-items:center;gap:16px">
+    <div id="selectedPetPhoto" style="width:64px;height:64px;border-radius:var(--radius-md);background:var(--cream-dark);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;flex-shrink:0"></div>
+    <div style="flex:1">
+      <div style="font-size:.8rem;color:var(--brown-mid);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Выбранный питомец</div>
+      <div id="selectedPetName" style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600"></div>
+      <div id="selectedPetInfo" style="font-size:.85rem;color:var(--brown-mid)"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="clearSelectedPet()">✕ Убрать</button>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="form-section">
+  <div class="container">
+    <div style="max-width:680px;margin:0 auto">
+      <div id="stepIndicator" style="display:flex;gap:8px;margin-bottom:40px;align-items:center">
+        <div class="step-dot active" id="step1dot">1</div>
+        <div style="flex:1;height:2px;background:var(--cream-dark)" id="line12"></div>
+        <div class="step-dot" id="step2dot">2</div>
+        <div style="flex:1;height:2px;background:var(--cream-dark)" id="line23"></div>
+        <div class="step-dot" id="step3dot">3</div>
+      </div>
+
+      <style>
+        .step-dot {
+          width: 36px; height: 36px;
+          border-radius: 50%;
+          background: var(--cream-dark);
+          color: var(--brown-mid);
+          display: flex; align-items: center; justify-content: center;
+          font-size: .85rem; font-weight: 700;
+          transition: all .3s;
+          flex-shrink: 0;
+        }
+        .step-dot.active { background: var(--terracotta); color: #fff; box-shadow: 0 4px 12px rgba(196,98,45,.4); }
+        .step-dot.done { background: var(--success); color: #fff; }
+      </style>
+
+      <!-- STEP 1: Выбор питомца -->
+      <div id="step1" class="form-card" style="max-width:100%">
+        <h2 class="form-title">Шаг 1. Выбери питомца</h2>
+        <p class="form-subtitle">Можешь выбрать конкретного питомца или оставить нам выбор.</p>
+
+        <div class="form-group">
+          <label class="form-label">Поиск по имени</label>
+          <input type="text" class="form-control" id="petSearch" placeholder="Начни вводить имя..." oninput="searchPets(this.value)">
+        </div>
+
+        <div id="petSearchResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px"></div>
+
+        <div id="selectedPetHiddenId" data-pet-id=""></div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:24px">
+          <button class="btn btn-primary" onclick="goToStep(2)">Далее →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: О себе -->
+      <div id="step2" class="form-card" style="max-width:100%;display:none">
+        <h2 class="form-title">Шаг 2. Расскажи о себе</h2>
+        <p class="form-subtitle">Нам важно убедиться, что питомец попадёт в хорошие руки.</p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="aName">Полное имя <span class="required">*</span></label>
+            <input type="text" class="form-control" id="aName" placeholder="Иван Иванов">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="aPhone">Телефон <span class="required">*</span></label>
+            <input type="tel" class="form-control" id="aPhone" placeholder="+7 (999) 123-45-67">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="aEmail">Email <span class="required">*</span></label>
+          <input type="email" class="form-control" id="aEmail" placeholder="your@email.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="aAddress">Адрес проживания <span class="required">*</span></label>
+          <input type="text" class="form-control" id="aAddress" placeholder="г. Москва, ул. Примерная, д. 1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="aHousing">Тип жилья <span class="required">*</span></label>
+          <select class="form-control" id="aHousing">
+            <option value="">Выбери тип</option>
+            <option value="apartment">Квартира</option>
+            <option value="house">Частный дом</option>
+            <option value="room">Комната</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-check">
+              <input type="checkbox" id="aChildren">
+              <span>В доме есть дети</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-check">
+              <input type="checkbox" id="aOtherPets">
+              <span>Есть другие животные</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;margin-top:24px">
+          <button class="btn btn-ghost" onclick="goToStep(1)">← Назад</button>
+          <button class="btn btn-primary" onclick="goToStep(3)">Далее →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Дополнительно -->
+      <div id="step3" class="form-card" style="max-width:100%;display:none">
+        <h2 class="form-title">Шаг 3. Почти готово!</h2>
+        <p class="form-subtitle">Расскажи, почему ты хочешь взять питомца. Это поможет нам принять решение.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="aExperience">Опыт с животными</label>
+          <select class="form-control" id="aExperience">
+            <option value="none">Никогда не было питомцев</option>
+            <option value="little">Немного есть</option>
+            <option value="much">Большой опыт</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="aMessage">Почему ты хочешь взять этого питомца? <span class="required">*</span></label>
+          <textarea class="form-control" id="aMessage" rows="5" placeholder="Расскажи о своей ситуации, образе жизни, чего ожидаешь от питомца..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-check">
+            <input type="checkbox" id="aConfirm">
+            <span>Я понимаю, что беру на себя ответственность за здоровье и благополучие питомца</span>
+          </label>
+        </div>
+
+        <div id="adoptError" style="color:var(--error);font-size:.85rem;margin-bottom:16px;display:none"></div>
+
+        <div style="display:flex;justify-content:space-between;margin-top:24px">
+          <button class="btn btn-ghost" onclick="goToStep(2)">← Назад</button>
+          <button class="btn btn-primary btn-lg" onclick="submitAdoptForm()">🐾 Отправить заявку</button>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="stepSuccess" style="display:none;text-align:center;padding:60px 24px">
+        <div style="font-size:5rem;margin-bottom:20px;animation:fadeInUp .5s ease">🎉</div>
+        <h2 style="margin-bottom:12px">Заявка отправлена!</h2>
+        <p style="color:var(--brown-mid);max-width:420px;margin:0 auto 32px">Мы рассмотрим её в течение 1–2 рабочих дней и свяжемся с тобой по указанным контактам.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <a href="index.html#catalog" class="btn btn-primary">Смотреть других питомцев</a>
+          <a href="profile.html" class="btn btn-outline">Мои заявки</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  let selectedPetId = null;
+  let currentStep = 1;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeData();
+    initNavbar();
+
+    // Pre-fill user info
+    const user = getCurrentUser();
+    if (user) {
+      document.getElementById('aName').value = user.name || '';
+      document.getElementById('aEmail').value = user.email || '';
+      document.getElementById('aPhone').value = user.phone || '';
+    }
+
+    // Check if coming from pet card
+    const params = new URLSearchParams(window.location.search);
+    const petId = params.get('pet');
+    if (petId) {
+      selectPet(petId);
+    }
+
+    // Load all available pets in search results
+    searchPets('');
+  });
+
+  function searchPets(query) {
+    const pets = filterPets({ search: query, status: 'available', sort: 'name' });
+    const container = document.getElementById('petSearchResults');
+
+    if (pets.length === 0) {
+      container.innerHTML = `<div style="color:var(--brown-mid);font-size:.85rem;grid-column:1/-1">Ничего не найдено</div>`;
+      return;
+    }
+
+    container.innerHTML = pets.map(pet => `
+      <div class="pet-select-card ${selectedPetId === pet.id ? 'selected' : ''}"
+           id="sel_${pet.id}" onclick="selectPet('${pet.id}')"
+           style="border:2px solid ${selectedPetId === pet.id ? 'var(--terracotta)' : 'var(--cream-dark)'};
+                  border-radius:var(--radius-md);padding:12px;cursor:pointer;transition:all .2s;
+                  background:${selectedPetId === pet.id ? 'rgba(196,98,45,.06)' : 'var(--white)'}">
+        <div style="width:100%;height:100px;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:10px;
+                    background:${generatePetPlaceholderBg(pet.species)};display:flex;align-items:center;justify-content:center;font-size:3rem">
+          ${pet.photo ? `<img src="${pet.photo}" style="width:100%;height:100%;object-fit:cover">` : getSpeciesEmoji(pet.species)}
+        </div>
+        <div style="font-weight:700;font-size:.95rem">${pet.name}</div>
+        <div style="font-size:.78rem;color:var(--brown-mid)">${getSpeciesLabel(pet.species)} · ${formatAge(pet.age, pet.ageUnit)}</div>
+        ${selectedPetId === pet.id ? '<div style="color:var(--terracotta);font-size:.78rem;font-weight:600;margin-top:4px">✓ Выбран</div>' : ''}
+      </div>
+    `).join('');
+  }
+
+  function selectPet(petId) {
+    selectedPetId = petId;
+    const pet = getPetById(petId);
+    if (!pet) return;
+
+    // Update banner
+    const banner = document.getElementById('selectedPetBanner');
+    const photoEl = document.getElementById('selectedPetPhoto');
+    banner.style.display = 'block';
+    document.getElementById('selectedPetName').textContent = pet.name;
+    document.getElementById('selectedPetInfo').textContent = `${getSpeciesLabel(pet.species)} · ${pet.breed} · ${formatAge(pet.age, pet.ageUnit)}`;
+
+    if (pet.photo) {
+      photoEl.innerHTML = `<img src="${pet.photo}" style="width:100%;height:100%;object-fit:cover">`;
+    } else {
+      photoEl.innerHTML = getSpeciesEmoji(pet.species);
+      photoEl.style.background = generatePetPlaceholderBg(pet.species);
+    }
+
+    searchPets(document.getElementById('petSearch').value);
+  }
+
+  function clearSelectedPet() {
+    selectedPetId = null;
+    document.getElementById('selectedPetBanner').style.display = 'none';
+    searchPets(document.getElementById('petSearch').value);
+  }
+
+  function goToStep(step) {
+    // Validate current step
+    if (step > currentStep) {
+      if (!validateStep(currentStep)) return;
+    }
+
+    // Hide current, show new
+    document.getElementById(`step${currentStep}`).style.display = 'none';
+    document.getElementById(`step${step}`).style.display = 'block';
+
+    // Update indicators
+    for (let i = 1; i <= 3; i++) {
+      const dot = document.getElementById(`step${i}dot`);
+      dot.className = 'step-dot';
+      if (i < step) dot.classList.add('done'), dot.textContent = '✓';
+      else if (i === step) dot.classList.add('active'), dot.textContent = i;
+      else dot.textContent = i;
+    }
+
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validateStep(step) {
+    if (step === 1) return true; // Pet selection is optional
+    if (step === 2) {
+      const name = document.getElementById('aName').value.trim();
+      const phone = document.getElementById('aPhone').value.trim();
+      const email = document.getElementById('aEmail').value.trim();
+      const address = document.getElementById('aAddress').value.trim();
+      const housing = document.getElementById('aHousing').value;
+
+      if (!name || !phone || !email || !address || !housing) {
+        showToast('Заполни все обязательные поля', 'error');
+        return false;
+      }
+      if (!validateEmail(email)) {
+        showToast('Введи корректный email', 'error');
+        return false;
+      }
+      return true;
+    }
+    return true;
+  }
+
+  function submitAdoptForm() {
+    const message = document.getElementById('aMessage').value.trim();
+    const confirm = document.getElementById('aConfirm').checked;
+    const errorEl = document.getElementById('adoptError');
+
+    errorEl.style.display = 'none';
+
+    if (!message) {
+      errorEl.textContent = 'Напиши сообщение — оно поможет нам лучше понять тебя';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    if (!confirm) {
+      errorEl.textContent = 'Подтверди, что берёшь ответственность за питомца';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const user = getCurrentUser();
+    if (!user) {
+      showToast('Войди в аккаунт, чтобы подать заявку', 'warning');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+      return;
+    }
+
+    const pet = selectedPetId ? getPetById(selectedPetId) : null;
+
+    const app = addApplication({
+      type: 'adopt',
+      userId: user.id,
+      petId: selectedPetId || null,
+      petName: pet?.name || 'Не указан',
+      userName: document.getElementById('aName').value.trim(),
+      userEmail: document.getElementById('aEmail').value.trim(),
+      phone: document.getElementById('aPhone').value.trim(),
+      address: document.getElementById('aAddress').value.trim(),
+      housing: document.getElementById('aHousing').value,
+      hasChildren: document.getElementById('aChildren').checked,
+      hasOtherPets: document.getElementById('aOtherPets').checked,
+      experience: document.getElementById('aExperience').value,
+      message
+    });
+
+    // Mark pet as reserved if selected
+    if (selectedPetId && pet?.status === 'available') {
+      updatePet(selectedPetId, { status: 'reserved' });
+    }
+
+    // Show success
+    document.getElementById(`step${currentStep}`).style.display = 'none';
+    document.getElementById('stepSuccess').style.display = 'block';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
