@@ -41,7 +41,7 @@
    mongodb+srv://myuser:mypass@cluster0.xxxxx.mongodb.net/shelter?retryWrites=true&w=majority
    ```
 7. **Сохраните эту строку** — она понадобится в Railway
-8. mongodb+srv://poma20063_db_user:<db_password>@cluster0.dbrwcpy.mongodb.net/?appName=Cluster0
+8. mongodb+srv://poma20063_db_user:nQA8KdoVZqI5AFJQ@cluster0.dbrwcpy.mongodb.net/?appName=Cluster0
 
 ---
 
