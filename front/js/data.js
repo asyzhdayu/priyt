@@ -8,7 +8,7 @@
 // Пример: 'https://shelter-backend-production.up.railway.app'
 // При локальной разработке: 'http://localhost:3001'
 // ====================================================
-const API_URL = 'http://localhost:3001';
+const API_URL = 'https://shelter-backend-production.up.railway.app';
 
 // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
 
