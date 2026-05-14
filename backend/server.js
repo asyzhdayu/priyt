@@ -8,7 +8,7 @@ const usersRouter = require('./routes/users');
 const applicationsRouter = require('./routes/applications');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 // ===== CORS =====
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5500')
