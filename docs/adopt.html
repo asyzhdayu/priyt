@@ -368,18 +368,24 @@
       return;
     }
 
+    if (!selectedPetId) {
+      errorEl.textContent = 'Выбери питомца на шаге 1';
+      errorEl.style.display = 'block';
+      return;
+    }
+
     const pet = selectedPetId ? await getPetById(selectedPetId) : null;
 
     const app = await addApplication({
       type: 'adopt',
       userId: user.id,
-      petId: selectedPetId || null,
+      petId: selectedPetId,
       petName: pet?.name || 'Не указан',
-      userName: document.getElementById('aName').value.trim(),
-      userEmail: document.getElementById('aEmail').value.trim(),
-      phone: document.getElementById('aPhone').value.trim(),
+      applicantName: document.getElementById('aName').value.trim(),
+      applicantEmail: document.getElementById('aEmail').value.trim(),
+      applicantPhone: document.getElementById('aPhone').value.trim(),
       address: document.getElementById('aAddress').value.trim(),
-      housing: document.getElementById('aHousing').value,
+      housingType: document.getElementById('aHousing').value,
       hasChildren: document.getElementById('aChildren').checked,
       hasOtherPets: document.getElementById('aOtherPets').checked,
       experience: document.getElementById('aExperience').value,
