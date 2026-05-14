@@ -329,7 +329,7 @@
 
   // ===== INIT =====
   document.addEventListener('DOMContentLoaded', () => {
-    initializeData();
+    
     initNavbar();
     initScrollReveal();
     initCounters();
@@ -372,6 +372,8 @@
     const grid = document.getElementById('petsGrid');
     const countEl = document.getElementById('resultsCount');
     if (!grid) return;
+
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--brown-mid);font-size:1.1rem">🐾 Загружаем питомцев...</div>`;
 
     const pets = await filterPets(filters);
 
