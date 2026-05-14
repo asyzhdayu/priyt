@@ -3,14 +3,8 @@
  * Замените этот файл вместо старого js/data.js
  */
 
-// ====================================================
-// ВАЖНО: укажите URL вашего бэкенда на Railway
-// Пример: 'https://shelter-backend-production.up.railway.app'
-// При локальной разработке: 'http://localhost:3001'
-// ====================================================
 const API_URL = 'https://shelterr-production.up.railway.app';
 
-// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
 
 function getToken() {
   return localStorage.getItem('shelter_token');
@@ -33,7 +27,6 @@ async function apiFetch(path, options = {}) {
   return data;
 }
 
-// ===== ПИТОМЦЫ =====
 
 async function getPets() {
   return apiFetch('/api/pets');
@@ -70,12 +63,11 @@ async function getStats() {
   return apiFetch('/api/pets/stats');
 }
 
-// ===== АУТЕНТИФИКАЦИЯ =====
 
-async function registerUser({ name, email, password, phone }) {
+async function registerUser({ name, email, password, phone, address, housingType, hasOtherPets }) {
   const data = await apiFetch('/api/users/register', {
     method: 'POST',
-    body: JSON.stringify({ name, email, password, phone }),
+    body: JSON.stringify({ name, email, password, phone, address, housingType, hasOtherPets }),
   });
   setToken(data.token);
   setCurrentUser(data.user);
@@ -97,7 +89,6 @@ function logout() {
   localStorage.removeItem('shelter_current_user');
 }
 
-// ===== ТЕКУЩИЙ ПОЛЬЗОВАТЕЛЬ (кэш в localStorage) =====
 
 function getCurrentUser() {
   const data = localStorage.getItem('shelter_current_user');
@@ -118,7 +109,6 @@ function isAdmin() { const u = getCurrentUser(); return u && u.role === 'admin';
 function isManager() { const u = getCurrentUser(); return u && u.role === 'manager'; }
 function isStaff() { const u = getCurrentUser(); return u && (u.role === 'admin' || u.role === 'manager'); }
 
-// ===== ПРОФИЛЬ =====
 
 async function updateProfile(updates) {
   const data = await apiFetch('/api/users/me', { method: 'PUT', body: JSON.stringify(updates) });
@@ -126,7 +116,6 @@ async function updateProfile(updates) {
   return data;
 }
 
-// ===== ИЗБРАННОЕ =====
 
 async function getFavorites() {
   if (!getCurrentUser()) return [];
@@ -143,7 +132,6 @@ async function isFavorite(petId) {
   return favs.some(p => (p.id || p._id) === petId);
 }
 
-// ===== ЗАЯВКИ =====
 
 async function addApplication(appData) {
   return apiFetch('/api/applications', { method: 'POST', body: JSON.stringify(appData) });
@@ -164,7 +152,6 @@ async function updateApplication(id, updates) {
   });
 }
 
-// ===== ПОЛЬЗОВАТЕЛИ (admin) =====
 
 async function getUsers() {
   return apiFetch('/api/users');
@@ -181,7 +168,6 @@ async function deleteUser(id) {
   return apiFetch('/api/users/' + id, { method: 'DELETE' });
 }
 
-// ===== HELPERS (без изменений) =====
 
 function formatAge(age, unit) {
   if (unit === 'months') return `${age} мес.`;

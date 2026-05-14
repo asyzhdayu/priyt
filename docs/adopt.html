@@ -11,23 +11,23 @@
 
 <!-- NAVBAR -->
 <nav class="navbar">
-  <a href="index.html" class="navbar-brand">
+  <a href="/priyt/" class="navbar-brand">
     <div class="brand-icon">🐾</div>
     ПриютДома
   </a>
   <ul class="navbar-nav">
-    <li><a href="index.html" class="nav-link">Главная</a></li>
-    <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
-    <li><a href="adopt.html" class="nav-link active">Взять животное</a></li>
-    <li><a href="surrender.html" class="nav-link">Отдать животное</a></li>
+    <li><a href="/priyt/" class="nav-link">Главная</a></li>
+    <li><a href="/priyt/#catalog" class="nav-link">Питомцы</a></li>
+    <li><a href="/priyt/adopt" class="nav-link active">Взять животное</a></li>
+    <li><a href="/priyt/surrender" class="nav-link">Отдать животное</a></li>
   </ul>
   <div class="navbar-actions">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
     <div id="navAuth" style="display:flex;gap:8px">
-      <a href="login.html" class="btn btn-ghost btn-sm">Войти</a>
+      <a href="/priyt/login" class="btn btn-ghost btn-sm">Войти</a>
     </div>
     <div id="navProfile" style="display:none;align-items:center;gap:10px">
-      <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
+      <a href="/priyt/profile" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
       <button class="btn btn-outline btn-sm" onclick="logout();location.href='index.html'">Выйти</button>
     </div>
     <button class="hamburger" id="hamburger">☰</button>
@@ -35,10 +35,10 @@
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="index.html" class="nav-link">🏠 Главная</a>
-  <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
-  <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
-  <a href="surrender.html" class="nav-link">🏡 Отдать животное</a>
+  <a href="/priyt/" class="nav-link">🏠 Главная</a>
+  <a href="/priyt/#catalog" class="nav-link">🐾 Питомцы</a>
+  <a href="/priyt/adopt" class="nav-link">❤️ Взять животное</a>
+  <a href="/priyt/surrender" class="nav-link">🏡 Отдать животное</a>
 </div>
 
 <!-- HERO MINI -->
@@ -206,8 +206,8 @@
         <h2 style="margin-bottom:12px">Заявка отправлена!</h2>
         <p style="color:var(--brown-mid);max-width:420px;margin:0 auto 32px">Мы рассмотрим её в течение 1–2 рабочих дней и свяжемся с тобой по указанным контактам.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-          <a href="index.html#catalog" class="btn btn-primary">Смотреть других питомцев</a>
-          <a href="profile.html" class="btn btn-outline">Мои заявки</a>
+          <a href="/priyt/#catalog" class="btn btn-primary">Смотреть других питомцев</a>
+          <a href="/priyt/profile" class="btn btn-outline">Мои заявки</a>
         </div>
       </div>
     </div>
@@ -362,11 +362,6 @@
     }
 
     const user = getCurrentUser();
-    if (!user) {
-      showToast('Войди в аккаунт, чтобы подать заявку', 'warning');
-      setTimeout(() => { window.location.href = 'login.html'; }, 1000);
-      return;
-    }
 
     if (!selectedPetId) {
       errorEl.textContent = 'Выбери питомца на шаге 1';
@@ -374,34 +369,34 @@
       return;
     }
 
-    const pet = selectedPetId ? await getPetById(selectedPetId) : null;
+    const pet = await getPetById(selectedPetId);
 
-    const app = await addApplication({
-      type: 'adopt',
-      userId: user.id,
-      petId: selectedPetId,
-      petName: pet?.name || 'Не указан',
-      applicantName: document.getElementById('aName').value.trim(),
-      applicantEmail: document.getElementById('aEmail').value.trim(),
-      applicantPhone: document.getElementById('aPhone').value.trim(),
-      address: document.getElementById('aAddress').value.trim(),
-      housingType: document.getElementById('aHousing').value,
-      hasChildren: document.getElementById('aChildren').checked,
-      hasOtherPets: document.getElementById('aOtherPets').checked,
-      experience: document.getElementById('aExperience').value,
-      message
-    });
+    try {
+      await addApplication({
+        petId: selectedPetId,
+        petName: pet?.name || 'Не указан',
+        applicantName: document.getElementById('aName').value.trim(),
+        applicantEmail: document.getElementById('aEmail').value.trim(),
+        applicantPhone: document.getElementById('aPhone').value.trim(),
+        address: document.getElementById('aAddress').value.trim(),
+        housingType: document.getElementById('aHousing').value,
+        hasChildren: document.getElementById('aChildren').checked,
+        hasOtherPets: document.getElementById('aOtherPets').checked,
+        experience: document.getElementById('aExperience').value,
+        message
+      });
 
-    // Mark pet as reserved if selected
-    if (selectedPetId && pet?.status === 'available') {
-      await updatePet(selectedPetId, { status: 'reserved' });
+      if (pet?.status === 'available') {
+        await updatePet(selectedPetId, { status: 'reserved' });
+      }
+
+      document.getElementById(`step${currentStep}`).style.display = 'none';
+      document.getElementById('stepSuccess').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      errorEl.textContent = e.message || 'Не удалось отправить заявку';
+      errorEl.style.display = 'block';
     }
-
-    // Show success
-    document.getElementById(`step${currentStep}`).style.display = 'none';
-    document.getElementById('stepSuccess').style.display = 'block';
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 </script>
 </body>

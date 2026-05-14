@@ -1,29 +1,30 @@
 const express = require('express');
 const router = express.Router();
 const Application = require('../models/Application');
-const { auth, requireStaff } = require('../middleware/auth');
+const { auth, optionalAuth, requireStaff } = require('../middleware/auth');
 
-// POST /api/applications — подать заявку (авторизованный пользователь)
-router.post('/', auth, async (req, res) => {
+// POST /api/applications — подать заявку (авторизованный или гость)
+router.post('/', optionalAuth, async (req, res) => {
   try {
     const { petId, applicantName, applicantEmail, applicantPhone, ...rest } = req.body;
     if (!petId || !applicantName || !applicantEmail || !applicantPhone) {
       return res.status(400).json({ error: 'Заполните все обязательные поля' });
     }
 
-    // Проверяем, нет ли уже заявки от этого пользователя на этого питомца
-    const existing = await Application.findOne({
-      petId,
-      userId: req.user._id,
-      status: { $in: ['pending', 'reviewing'] },
-    });
-    if (existing) {
-      return res.status(409).json({ error: 'Вы уже подали заявку на этого питомца' });
+    if (req.user) {
+      const existing = await Application.findOne({
+        petId,
+        userId: req.user._id,
+        status: { $in: ['pending', 'reviewing'] },
+      });
+      if (existing) {
+        return res.status(409).json({ error: 'Вы уже подали заявку на этого питомца' });
+      }
     }
 
     const app = new Application({
       petId,
-      userId: req.user._id,
+      userId: req.user?._id || null,
       applicantName,
       applicantEmail,
       applicantPhone,

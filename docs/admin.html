@@ -11,18 +11,18 @@
 
 <!-- NAVBAR -->
 <nav class="navbar">
-  <a href="index.html" class="navbar-brand">
+  <a href="/priyt/" class="navbar-brand">
     <div class="brand-icon">🐾</div>
     ПриютДома
   </a>
   <ul class="navbar-nav">
-    <li><a href="index.html" class="nav-link">Главная</a></li>
-    <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
+    <li><a href="/priyt/" class="nav-link">Главная</a></li>
+    <li><a href="/priyt/#catalog" class="nav-link">Питомцы</a></li>
   </ul>
   <div class="navbar-actions">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
     <div id="navProfile" style="display:none;align-items:center;gap:10px">
-      <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
+      <a href="/priyt/profile" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
       <button class="btn btn-outline btn-sm" onclick="logout();location.href='index.html'">Выйти</button>
     </div>
     <button class="hamburger" id="hamburger">☰</button>
@@ -533,12 +533,12 @@
         <td><span style="font-size:1.1rem">${a.type === 'adopt' ? '❤️' : '🏡'}</span> ${a.type === 'adopt' ? 'Усыновление' : 'Передача'}</td>
         <td><strong>${a.petName || '—'}</strong></td>
         <td>
-          <div style="font-weight:600">${a.userName || '—'}</div>
-          <div style="font-size:.78rem;color:var(--brown-mid)">${a.userEmail || ''}</div>
-          <div style="font-size:.78rem;color:var(--brown-mid)">${a.phone || ''}</div>
+          <div style="font-weight:600">${a.applicantName || '—'}</div>
+          <div style="font-size:.78rem;color:var(--brown-mid)">${a.applicantEmail || ''}</div>
+          <div style="font-size:.78rem;color:var(--brown-mid)">${a.applicantPhone || ''}</div>
         </td>
         <td style="font-size:.82rem;line-height:1.7">
-          ${a.housing ? `<div>🏠 ${hLabel[a.housing] || a.housing}</div>` : ''}
+          ${a.housingType ? `<div>🏠 ${hLabel[a.housingType] || a.housingType}</div>` : ''}
           ${a.experience !== undefined ? `<div>📚 ${eLabel[a.experience] || a.experience}</div>` : ''}
           ${a.hasChildren  ? '<div>👶 Дети</div>' : ''}
           ${a.hasOtherPets ? '<div>🐾 Есть животные</div>' : ''}
@@ -577,18 +577,36 @@
 
     document.getElementById('appModalTitle').textContent = a.type === 'adopt' ? '❤️ Заявка на усыновление' : '🏡 Заявка на передачу';
 
+    const pet = a.petId && typeof a.petId === 'object' ? a.petId : null;
+    const petName = pet?.name || a.petName || '—';
+    const petPhoto = pet?.photo ? `<img src="${pet.photo}" style="width:100%;height:100%;object-fit:cover">` : getSpeciesEmoji(pet?.species || '');
+
     let html = `
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
         <span class="badge badge-${a.status}" style="font-size:.85rem">${sLabel[a.status]}</span>
         <span style="font-size:.82rem;color:var(--brown-mid)">${new Date(a.dateSubmitted).toLocaleString('ru-RU')}</span>
       </div>
 
-      <div class="app-section-label" style="border-top:none;margin-top:0;padding-top:0">Контактные данные</div>
+      ${pet ? `
+      <div class="app-section-label" style="border-top:none;margin-top:0;padding-top:0">Питомец</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:12px;background:var(--cream-dark);border-radius:var(--radius-sm)">
+        <div style="width:56px;height:56px;border-radius:10px;overflow:hidden;background:${generatePetPlaceholderBg(pet.species)};display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">${petPhoto}</div>
+        <div>
+          <div style="font-weight:700;font-size:1rem">${pet.name}</div>
+          <div style="font-size:.83rem;color:var(--brown-mid)">${getSpeciesLabel(pet.species)} · ${pet.breed} · ${getGenderLabel(pet.gender)}</div>
+          <div style="font-size:.8rem;color:var(--brown-mid)">${formatAge(pet.age, pet.ageUnit)} · ${getSizeLabel(pet.size)}</div>
+        </div>
+      </div>` : `
+      <div class="app-section-label" style="border-top:none;margin-top:0;padding-top:0">Питомец</div>
+      <div style="margin-bottom:16px;color:var(--brown-mid)">${petName}</div>
+      `}
+
+      <div class="app-section-label">Контактные данные</div>
       <div class="app-detail-grid">
-        <div class="app-detail-item"><label>Имя</label><span>${a.userName || '—'}</span></div>
-        <div class="app-detail-item"><label>Питомец</label><span>${a.petName || '—'}</span></div>
-        <div class="app-detail-item"><label>Email</label><span>${a.userEmail || '—'}</span></div>
-        <div class="app-detail-item"><label>Телефон</label><span>${a.phone || '—'}</span></div>
+        <div class="app-detail-item"><label>Имя</label><span>${a.applicantName || '—'}</span></div>
+        <div class="app-detail-item"><label>Email</label><span>${a.applicantEmail || '—'}</span></div>
+        <div class="app-detail-item"><label>Телефон</label><span>${a.applicantPhone || '—'}</span></div>
+        ${a.userId && typeof a.userId === 'object' ? `<div class="app-detail-item"><label>Аккаунт</label><span>${a.userId.name} (${a.userId.email})</span></div>` : ''}
       </div>
     `;
 
@@ -597,7 +615,7 @@
         <div class="app-section-label">Условия проживания</div>
         <div class="app-detail-grid">
           <div class="app-detail-item"><label>Адрес</label><span>${a.address || '—'}</span></div>
-          <div class="app-detail-item"><label>Тип жилья</label><span>${hLabel[a.housing] || a.housing || '—'}</span></div>
+          <div class="app-detail-item"><label>Тип жилья</label><span>${hLabel[a.housingType] || a.housingType || '—'}</span></div>
           <div class="app-detail-item"><label>Дети в доме</label><span>${a.hasChildren ? '✅ Да' : '❌ Нет'}</span></div>
           <div class="app-detail-item"><label>Другие животные</label><span>${a.hasOtherPets ? '✅ Да' : '❌ Нет'}</span></div>
           <div class="app-detail-item" style="grid-column:1/-1"><label>Опыт с животными</label><span>${eLabel[a.experience] || a.experience || '—'}</span></div>

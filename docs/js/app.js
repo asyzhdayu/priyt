@@ -1,4 +1,3 @@
-// ===== THEME =====
 function initTheme() {
   const saved = localStorage.getItem('shelter_theme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
@@ -18,7 +17,6 @@ function updateThemeIcon(theme) {
   if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
-// ===== TOAST =====
 let toastContainer = null;
 
 function getToastContainer() {
@@ -31,7 +29,7 @@ function getToastContainer() {
 }
 
 function showToast(message, type = 'info', duration = 3500) {
-  const icons = { success: '✅', error: '❌', warning: '⚠️', info: '💬' };
+  const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
   const container = getToastContainer();
 
   const toast = document.createElement('div');
@@ -45,7 +43,6 @@ function showToast(message, type = 'info', duration = 3500) {
   }, duration);
 }
 
-// ===== MODAL =====
 let activeModal = null;
 
 function openModal(id) {
@@ -72,7 +69,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && activeModal) closeModal(activeModal);
 });
 
-// ===== NAVBAR =====
 function initNavbar() {
   initTheme();
   updateNavbarAuth();
@@ -124,7 +120,6 @@ function updateNavbarAuth() {
   }
 }
 
-// ===== PHOTO UPLOAD =====
 function initPhotoUpload(inputId, previewId, onLoad) {
   const input = document.getElementById(inputId);
   const preview = document.getElementById(previewId);
@@ -178,7 +173,6 @@ function removePhotoPreview(inputId, previewId) {
   if (preview) preview.innerHTML = '';
 }
 
-// ===== SCROLL REVEAL =====
 function initScrollReveal() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -191,7 +185,6 @@ function initScrollReveal() {
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 }
 
-// ===== COUNTER ANIMATION =====
 function animateCounter(el, target, duration = 1500) {
   let start = 0;
   const step = target / (duration / 16);
@@ -219,7 +212,6 @@ function initCounters() {
   document.querySelectorAll('[data-target]').forEach(el => observer.observe(el));
 }
 
-// ===== FORM VALIDATION =====
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -249,7 +241,6 @@ function clearFieldError(fieldId) {
   if (errEl) errEl.remove();
 }
 
-// ===== PET CARD HTML =====
 function renderPetCard(pet, showAdminActions = false) {
   const fav = isFavorite(pet.id);
   const photoHtml = pet.photo
@@ -298,7 +289,6 @@ function renderPetCard(pet, showAdminActions = false) {
   `;
 }
 
-// ===== PET MODAL =====
 function openPetModal(petId) {
   const pet = getPetById(petId);
   if (!pet) return;
@@ -369,7 +359,7 @@ function handleFavorite(petId, btn, fromModal = false) {
   const user = getCurrentUser();
   if (!user) {
     showToast('Войдите, чтобы добавить в избранное', 'warning');
-    setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+    setTimeout(() => { window.location.href = '/priyt/login'; }, 1000);
     return;
   }
 
@@ -401,14 +391,13 @@ function goToAdopt(petId) {
   const user = getCurrentUser();
   if (!user) {
     showToast('Войдите, чтобы подать заявку', 'warning');
-    setTimeout(() => { window.location.href = 'login.html?redirect=adopt&pet=' + petId; }, 1000);
+    setTimeout(() => { window.location.href = '/priyt/login?redirect=adopt&pet=' + petId; }, 1000);
     return;
   }
   window.location.href = `adopt.html?pet=${petId}`;
 }
 
-// ===== REQUIRE AUTH =====
-function requireAuth(redirectTo = 'login.html') {
+function requireAuth(redirectTo = '/priyt/login') {
   const user = getCurrentUser();
   if (!user) {
     window.location.href = redirectTo;
@@ -421,7 +410,7 @@ function requireAdmin() {
   const user = getCurrentUser();
   if (!user || user.role !== 'admin') {
     showToast('Доступ запрещён', 'error');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+    setTimeout(() => { window.location.href = '/priyt/'; }, 1000);
     return null;
   }
   return user;
@@ -431,7 +420,7 @@ function requireStaff() {
   const user = getCurrentUser();
   if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
     showToast('Доступ запрещён', 'error');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+    setTimeout(() => { window.location.href = '/priyt/'; }, 1000);
     return null;
   }
   return user;

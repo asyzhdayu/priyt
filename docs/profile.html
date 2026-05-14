@@ -11,36 +11,36 @@
 
 <!-- NAVBAR -->
 <nav class="navbar">
-  <a href="index.html" class="navbar-brand">
+  <a href="/priyt/" class="navbar-brand">
     <div class="brand-icon">🐾</div>
     ПриютДома
   </a>
   <ul class="navbar-nav">
-    <li><a href="index.html" class="nav-link">Главная</a></li>
-    <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
-    <li><a href="adopt.html" class="nav-link">Взять животное</a></li>
-    <li><a href="surrender.html" class="nav-link">Отдать животное</a></li>
+    <li><a href="/priyt/" class="nav-link">Главная</a></li>
+    <li><a href="/priyt/#catalog" class="nav-link">Питомцы</a></li>
+    <li><a href="/priyt/adopt" class="nav-link">Взять животное</a></li>
+    <li><a href="/priyt/surrender" class="nav-link">Отдать животное</a></li>
   </ul>
   <div class="navbar-actions">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
     <div id="navAuth" style="display:flex;gap:8px">
-      <a href="login.html" class="btn btn-ghost btn-sm">Войти</a>
+      <a href="/priyt/login" class="btn btn-ghost btn-sm">Войти</a>
     </div>
     <div id="navProfile" style="display:none;align-items:center;gap:10px">
-      <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
+      <a href="/priyt/profile" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
       <button class="btn btn-outline btn-sm" onclick="handleLogout()">Выйти</button>
     </div>
-    <a href="admin.html" id="navAdmin" class="btn btn-sm" style="display:none;background:var(--espresso);color:#fff">⚙️ Админ</a>
+    <a href="/priyt/admin" id="navAdmin" class="btn btn-sm" style="display:none;background:var(--espresso);color:#fff">⚙️ Админ</a>
     <button class="hamburger" id="hamburger">☰</button>
   </div>
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="index.html" class="nav-link">🏠 Главная</a>
-  <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
-  <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
-  <a href="surrender.html" class="nav-link">🏡 Отдать животное</a>
-  <a href="profile.html" class="nav-link">👤 Мой профиль</a>
+  <a href="/priyt/" class="nav-link">🏠 Главная</a>
+  <a href="/priyt/#catalog" class="nav-link">🐾 Питомцы</a>
+  <a href="/priyt/adopt" class="nav-link">❤️ Взять животное</a>
+  <a href="/priyt/surrender" class="nav-link">🏡 Отдать животное</a>
+  <a href="/priyt/profile" class="nav-link">👤 Мой профиль</a>
 </div>
 
 <style>
@@ -230,7 +230,7 @@
 
     currentUser = getCurrentUser();
     if (!currentUser) {
-      window.location.href = 'login.html';
+      window.location.href = "/priyt/login';
       return;
     }
 
@@ -270,23 +270,29 @@
     const apps = await getUserApplications(currentUser.id);
 
     if (apps.length === 0) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>Заявок пока нет</h3><p>Подай заявку на усыновление или передачу животного</p><a href="adopt.html" class="btn btn-primary" style="margin-top:16px">Взять питомца</a></div>`;
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>Заявок пока нет</h3><p>Подай заявку на усыновление или передачу животного</p><a href="/priyt/adopt" class="btn btn-primary" style="margin-top:16px">Взять питомца</a></div>`;
       return;
     }
 
     list.innerHTML = apps.map(app => {
-      const typeLabel = app.type === 'adopt' ? '❤️ Усыновление' : '🏡 Передача';
-      const date = new Date(app.dateSubmitted).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-      const statusMap = { pending: 'На рассмотрении', approved: 'Одобрена', rejected: 'Отклонена' };
+      const isAdopt = app.type !== 'surrender';
+      const typeLabel = isAdopt ? '❤️ Усыновление' : '🏡 Передача животного';
+      const typeColor = isAdopt ? 'var(--terracotta)' : 'var(--sage)';
+      const date = new Date(app.dateSubmitted || app.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+      const statusMap = { pending: '⏳ На рассмотрении', reviewing: '🔍 Рассматривается', approved: '✓ Одобрена', rejected: '✕ Отклонена' };
+      const statusColor = { pending: 'var(--brown-mid)', reviewing: '#b07d1a', approved: 'var(--success)', rejected: 'var(--error)' };
+      const pet = app.petId && typeof app.petId === 'object' ? app.petId : null;
+      const petName = pet?.name || app.petName || 'Не указан';
       return `
         <div class="app-item">
-          <div class="app-icon">${app.type === 'adopt' ? '🐾' : '🏠'}</div>
+          <div class="app-icon">${isAdopt ? '🐾' : '🏠'}</div>
           <div style="flex:1">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
-              <span style="font-weight:700">${typeLabel}</span>
-              <span class="app-status ${app.status}">${statusMap[app.status] || app.status}</span>
+              <span style="font-weight:700;color:${typeColor}">${typeLabel}</span>
+              <span style="font-size:.78rem;font-weight:600;color:${statusColor[app.status] || 'var(--brown-mid)'}">${statusMap[app.status] || app.status}</span>
             </div>
-            <div style="font-size:.9rem;margin-bottom:4px">Питомец: <strong>${app.petName || 'Не указан'}</strong></div>
+            <div style="font-size:.9rem;margin-bottom:4px">Питомец: <strong>${petName}</strong>${pet ? ` · ${getSpeciesLabel(pet.species)} · ${getGenderLabel(pet.gender)}` : ''}</div>
+            ${app.staffComment ? `<div style="font-size:.82rem;color:var(--brown-mid);font-style:italic;margin-bottom:4px">Комментарий: ${app.staffComment}</div>` : ''}
             <div style="font-size:.8rem;color:var(--brown-mid)">Подана: ${date}</div>
           </div>
         </div>
@@ -299,7 +305,7 @@
     const favIds = await getFavorites();
 
     if (favIds.length === 0) {
-      list.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❤️</div><h3>Избранное пусто</h3><p>Добавляй понравившихся питомцев в избранное</p><a href="index.html#catalog" class="btn btn-primary" style="margin-top:16px">Смотреть питомцев</a></div>`;
+      list.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❤️</div><h3>Избранное пусто</h3><p>Добавляй понравившихся питомцев в избранное</p><a href="/priyt/#catalog" class="btn btn-primary" style="margin-top:16px">Смотреть питомцев</a></div>`;
       return;
     }
 
@@ -371,7 +377,7 @@
 
   function handleLogout() {
     logout();
-    window.location.href = 'index.html';
+    window.location.href = "/priyt/"';
   }
 </script>
 </body>

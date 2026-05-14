@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Проверяет JWT и добавляет req.user
 async function auth(req, res, next) {
   try {
     const header = req.headers.authorization;
@@ -19,7 +18,6 @@ async function auth(req, res, next) {
   }
 }
 
-// Только для staff (admin или manager)
 function requireStaff(req, res, next) {
   if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
     return res.status(403).json({ error: 'Доступ запрещён: требуется роль staff' });
@@ -27,7 +25,6 @@ function requireStaff(req, res, next) {
   next();
 }
 
-// Только для admin
 function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Доступ запрещён: требуется роль admin' });
@@ -35,4 +32,17 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { auth, requireStaff, requireAdmin };
+async function optionalAuth(req, res, next) {
+  try {
+    const header = req.headers.authorization;
+    if (header && header.startsWith('Bearer ')) {
+      const token = header.split(' ')[1];
+      const payload = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(payload.id).select('-password');
+      if (user) req.user = user;
+    }
+  } catch {}
+  next();
+}
+
+module.exports = { auth, optionalAuth, requireStaff, requireAdmin };

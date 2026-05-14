@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const applicationSchema = new mongoose.Schema(
   {
     petId: { type: mongoose.Schema.Types.ObjectId, ref: 'Pet', required: true },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    // Контактные данные из формы заявки
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     applicantName: { type: String, required: true, trim: true },
     applicantEmail: { type: String, required: true, trim: true },
     applicantPhone: { type: String, required: true, trim: true },
@@ -18,7 +17,6 @@ const applicationSchema = new mongoose.Schema(
       enum: ['pending', 'reviewing', 'approved', 'rejected'],
       default: 'pending',
     },
-    // Комментарий сотрудника при изменении статуса
     staffComment: { type: String, trim: true, default: '' },
     dateSubmitted: { type: Date, default: Date.now },
   },
