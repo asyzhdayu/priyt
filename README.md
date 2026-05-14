@@ -53,35 +53,13 @@
 ### Пользователи
 Раздел **Пользователи** доступен только администратору. Здесь можно создавать аккаунты сотрудников, менять роли и удалять пользователей.
 
----
-
-## Запуск локально
-
-**Требования:** Node.js 18+, аккаунт MongoDB Atlas
-
-```bash
-cd backend
-cp .env.example .env
-# Заполни MONGODB_URI и JWT_SECRET в .env
-npm install
-npm run seed    # заполнить базу тестовыми данными
-npm run dev     # сервер на http://localhost:3001
-```
-
-Фронтенд — открой `docs/index.html` в браузере или через Live Server.  
-Для локальной разработки измени `API_URL` в `docs/js/data.js` на `http://localhost:3001`.
-
----
-
 ## Деплой
 
 | Часть | Хостинг |
 |---|---|
-| Фронтенд | GitHub Pages — папка `docs/`, ветка `main` |
-| Бэкенд | Railway — Root Directory: `backend` |
-| База данных | MongoDB Atlas M0 Free |
-
-Подробная инструкция — [`backend/DEPLOY.md`](backend/DEPLOY.md).
+| Фронтенд | GitHub Pages |
+| Бэкенд | Railway  |
+| База данных | MongoDB  |
 
 ---
 
