@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const mongoose = require('mongoose');
 
 const petsRouter = require('./routes/pets');
@@ -10,14 +11,14 @@ const applicationsRouter = require('./routes/applications');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// ===== CORS =====
+app.use(compression());
+
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5500')
   .split(',')
   .map(o => o.trim());
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Разрешаем запросы без origin (например, curl, Postman)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -27,9 +28,16 @@ app.use(cors({
   credentials: true,
 }));
 
-// ===== MIDDLEWARE =====
-app.use(express.json({ limit: '10mb' })); // 10MB для base64-фото
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Cache-Control для GET запросов к питомцам (30 сек)
+app.use('/api/pets', (req, res, next) => {
+  if (req.method === 'GET') {
+    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+  }
+  next();
+});
 
 // ===== ROUTES =====
 app.use('/api/pets', petsRouter);

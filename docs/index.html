@@ -6,6 +6,8 @@
   <title>ПриютДома — Найди своего питомца</title>
   <link rel="stylesheet" href="css/main.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+  <link rel="preconnect" href="https://shelterr-production.up.railway.app">
+  <link rel="dns-prefetch" href="https://shelterr-production.up.railway.app">
 </head>
 <body>
 
@@ -329,19 +331,17 @@
 
   // ===== INIT =====
   document.addEventListener('DOMContentLoaded', () => {
-    
     initNavbar();
     initScrollReveal();
     initCounters();
-    loadCatalog();
-    updateHeroStats();
 
-    // Search on enter
+    // Грузим параллельно
+    Promise.all([loadCatalog(), updateHeroStats()]);
+
     document.getElementById('searchInput')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') applyFilters();
     });
 
-    // Live search
     document.getElementById('searchInput')?.addEventListener('input', debounce(applyFilters, 400));
   });
 

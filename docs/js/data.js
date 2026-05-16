@@ -1,15 +1,37 @@
-/**
- * data.js — замена localStorage на API-запросы к бэкенду
- * Замените этот файл вместо старого js/data.js
- */
-
 const API_URL = 'https://shelterr-production.up.railway.app';
 
+// ── Простой in-memory кеш для GET-запросов ──────────────────────────────────
+const _cache = new Map();
+const CACHE_TTL = 30_000; // 30 сек
 
+function cacheGet(key) {
+  const entry = _cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CACHE_TTL) { _cache.delete(key); return null; }
+  return entry.data;
+}
+
+function cacheSet(key, data) {
+  _cache.set(key, { data, ts: Date.now() });
+}
+
+function cacheClear(prefix) {
+  for (const key of _cache.keys()) {
+    if (!prefix || key.startsWith(prefix)) _cache.delete(key);
+  }
+}
+
+// ── Keep-alive: пингуем сервер каждые 10 мин, чтобы Railway не засыпал ──────
+(function keepAlive() {
+  setInterval(() => {
+    fetch(API_URL + '/api/health', { method: 'GET' }).catch(() => {});
+  }, 10 * 60 * 1000);
+})();
+
+// ── Базовый fetch ─────────────────────────────────────────────────────────────
 function getToken() {
   return localStorage.getItem('shelter_token');
 }
-
 function setToken(token) {
   if (token) localStorage.setItem('shelter_token', token);
   else localStorage.removeItem('shelter_token');
@@ -20,14 +42,31 @@ async function apiFetch(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
+  const isGet = !options.method || options.method === 'GET';
+  const cacheKey = path;
+
+  if (isGet) {
+    const cached = cacheGet(cacheKey);
+    if (cached) return cached;
+  }
+
   const res = await fetch(API_URL + path, { ...options, headers });
   const data = await res.json();
-
   if (!res.ok) throw new Error(data.error || 'Ошибка сервера');
+
+  if (isGet) cacheSet(cacheKey, data);
   return data;
 }
 
+// Мутации сбрасывают кеш нужного раздела
+async function apiMutate(path, options) {
+  const section = path.split('/')[2]; // pets | users | applications
+  const data = await apiFetch(path, options);
+  cacheClear('/api/' + section);
+  return data;
+}
 
+// ── Питомцы ───────────────────────────────────────────────────────────────────
 async function getPets() {
   return apiFetch('/api/pets');
 }
@@ -48,24 +87,24 @@ async function getPetById(id) {
 }
 
 async function addPet(petData) {
-  return apiFetch('/api/pets', { method: 'POST', body: JSON.stringify(petData) });
+  return apiMutate('/api/pets', { method: 'POST', body: JSON.stringify(petData) });
 }
 
 async function updatePet(id, updates) {
-  return apiFetch('/api/pets/' + id, { method: 'PUT', body: JSON.stringify(updates) });
+  return apiMutate('/api/pets/' + id, { method: 'PUT', body: JSON.stringify(updates) });
 }
 
 async function deletePet(id) {
-  return apiFetch('/api/pets/' + id, { method: 'DELETE' });
+  return apiMutate('/api/pets/' + id, { method: 'DELETE' });
 }
 
 async function getStats() {
   return apiFetch('/api/pets/stats');
 }
 
-
+// ── Авторизация ───────────────────────────────────────────────────────────────
 async function registerUser({ name, email, password, phone, address, housingType, hasOtherPets }) {
-  const data = await apiFetch('/api/users/register', {
+  const data = await apiMutate('/api/users/register', {
     method: 'POST',
     body: JSON.stringify({ name, email, password, phone, address, housingType, hasOtherPets }),
   });
@@ -75,7 +114,7 @@ async function registerUser({ name, email, password, phone, address, housingType
 }
 
 async function loginUser(email, password) {
-  const data = await apiFetch('/api/users/login', {
+  const data = await apiMutate('/api/users/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
@@ -87,9 +126,10 @@ async function loginUser(email, password) {
 function logout() {
   setToken(null);
   localStorage.removeItem('shelter_current_user');
+  cacheClear();
 }
 
-
+// ── Текущий пользователь ──────────────────────────────────────────────────────
 function getCurrentUser() {
   const data = localStorage.getItem('shelter_current_user');
   return data ? JSON.parse(data) : null;
@@ -105,26 +145,26 @@ function setCurrentUser(user) {
   }
 }
 
-function isAdmin() { const u = getCurrentUser(); return u && u.role === 'admin'; }
+function isAdmin()   { const u = getCurrentUser(); return u && u.role === 'admin'; }
 function isManager() { const u = getCurrentUser(); return u && u.role === 'manager'; }
-function isStaff() { const u = getCurrentUser(); return u && (u.role === 'admin' || u.role === 'manager'); }
-
+function isStaff()   { const u = getCurrentUser(); return u && (u.role === 'admin' || u.role === 'manager'); }
 
 async function updateProfile(updates) {
-  const data = await apiFetch('/api/users/me', { method: 'PUT', body: JSON.stringify(updates) });
+  const data = await apiMutate('/api/users/me', { method: 'PUT', body: JSON.stringify(updates) });
   setCurrentUser(data);
   return data;
 }
 
-
+// ── Избранное ─────────────────────────────────────────────────────────────────
 async function getFavorites() {
   if (!getCurrentUser()) return [];
   return apiFetch('/api/users/me/favorites');
 }
 
 async function toggleFavorite(petId) {
-  const data = await apiFetch('/api/users/me/favorites/' + petId, { method: 'POST' });
-  return data.added; // true = добавлено, false = убрано
+  const data = await apiMutate('/api/users/me/favorites/' + petId, { method: 'POST' });
+  cacheClear('/api/users/me/favorites');
+  return data.added;
 }
 
 async function isFavorite(petId) {
@@ -132,9 +172,9 @@ async function isFavorite(petId) {
   return favs.some(p => (p.id || p._id) === petId);
 }
 
-
+// ── Заявки ────────────────────────────────────────────────────────────────────
 async function addApplication(appData) {
-  return apiFetch('/api/applications', { method: 'POST', body: JSON.stringify(appData) });
+  return apiMutate('/api/applications', { method: 'POST', body: JSON.stringify(appData) });
 }
 
 async function getUserApplications() {
@@ -146,29 +186,26 @@ async function getApplications() {
 }
 
 async function updateApplication(id, updates) {
-  return apiFetch('/api/applications/' + id + '/status', {
+  return apiMutate('/api/applications/' + id + '/status', {
     method: 'PUT',
     body: JSON.stringify(updates),
   });
 }
 
-
+// ── Пользователи (admin) ──────────────────────────────────────────────────────
 async function getUsers() {
   return apiFetch('/api/users');
 }
 
 async function createUser(userData) {
-  return apiFetch('/api/users/admin/create', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  });
+  return apiMutate('/api/users/admin/create', { method: 'POST', body: JSON.stringify(userData) });
 }
 
 async function deleteUser(id) {
-  return apiFetch('/api/users/' + id, { method: 'DELETE' });
+  return apiMutate('/api/users/' + id, { method: 'DELETE' });
 }
 
-
+// ── Утилиты ───────────────────────────────────────────────────────────────────
 function formatAge(age, unit) {
   if (unit === 'months') return `${age} мес.`;
   if (age === 1) return '1 год';
@@ -202,9 +239,9 @@ function getStatusLabel(status) {
 
 function generatePetPlaceholderBg(species) {
   return {
-    cat: 'linear-gradient(135deg, #F5D5B0, #E8B080)',
-    dog: 'linear-gradient(135deg, #B8D4E8, #8ABDD4)',
+    cat:    'linear-gradient(135deg, #F5D5B0, #E8B080)',
+    dog:    'linear-gradient(135deg, #B8D4E8, #8ABDD4)',
     rabbit: 'linear-gradient(135deg, #D4E8B8, #AAD490)',
-    other: 'linear-gradient(135deg, #E8D4F0, #C8A8E0)',
+    other:  'linear-gradient(135deg, #E8D4F0, #C8A8E0)',
   }[species] || 'linear-gradient(135deg, #E8D4F0, #C8A8E0)';
 }
