@@ -292,7 +292,8 @@
 
     // Check hash
     if (window.location.hash === '#favorites') showTab('favs', document.querySelector('[onclick*="favs"]'));
-    if (window.location.hash === '#apps') showTab('apps', document.querySelector('[onclick*="apps"]'));
+    else if (window.location.hash === '#apps') showTab('apps', document.querySelector('[onclick*="apps"]'));
+    else showTab('info', document.querySelector('[onclick*="info"]'));
   });
 
   function showTab(tab, btn) {
