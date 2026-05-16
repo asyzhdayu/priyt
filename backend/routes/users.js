@@ -11,14 +11,14 @@ function signToken(userId) {
 // POST /api/users/register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, address, housingType, hasOtherPets } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Заполните все обязательные поля' });
     }
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) return res.status(409).json({ error: 'Email уже используется' });
 
-    const user = new User({ name, email, password, phone });
+    const user = new User({ name, email, password, phone, address, housingType, hasOtherPets });
     await user.save();
 
     const token = signToken(user._id);
@@ -55,30 +55,28 @@ router.get('/me', auth, async (req, res) => {
 // PUT /api/users/me — обновить профиль
 router.put('/me', auth, async (req, res) => {
   try {
-    const allowed = ['name', 'phone', 'avatar'];
+    const allowed = ['name', 'phone', 'avatar', 'address', 'housingType', 'hasOtherPets'];
     const updates = {};
     allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 
-    // Обновление пароля
-    if (req.body.password) {
-      if (!req.body.currentPassword) {
+    if (req.body.passwordNew) {
+      if (!req.body.passwordOld) {
         return res.status(400).json({ error: 'Введите текущий пароль' });
       }
       const user = await User.findById(req.user._id);
-      const ok = await user.comparePassword(req.body.currentPassword);
+      const ok = await user.comparePassword(req.body.passwordOld);
       if (!ok) return res.status(400).json({ error: 'Неверный текущий пароль' });
-      updates.password = req.body.password;
+
+      const freshUser = await User.findById(req.user._id);
+      freshUser.password = req.body.passwordNew;
+      Object.assign(freshUser, updates);
+      await freshUser.save();
+      return res.json(freshUser);
     }
 
     const user = await User.findByIdAndUpdate(req.user._id, updates, {
       new: true, runValidators: true,
     });
-    // Если менялся пароль — пересохранить через pre-save для хеширования
-    if (updates.password) {
-      const freshUser = await User.findById(req.user._id);
-      freshUser.password = updates.password;
-      await freshUser.save();
-    }
     res.json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
