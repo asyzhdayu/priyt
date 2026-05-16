@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Мой профиль — ПриютДома</title>
+  <title>Мой профиль — Приютик!</title>
   <link rel="stylesheet" href="css/main.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
   <link rel="preconnect" href="https://shelterr-production.up.railway.app">
@@ -15,7 +15,7 @@
 <nav class="navbar">
   <a href="/priyt/" class="navbar-brand">
     <div class="brand-icon">🐾</div>
-    ПриютДома
+    Приютик!
   </a>
   <ul class="navbar-nav">
     <li><a href="/priyt/" class="nav-link">Главная</a></li>
@@ -292,8 +292,7 @@
 
     // Check hash
     if (window.location.hash === '#favorites') showTab('favs', document.querySelector('[onclick*="favs"]'));
-    else if (window.location.hash === '#apps') showTab('apps', document.querySelector('[onclick*="apps"]'));
-    else showTab('info', document.querySelector('[onclick*="info"]'));
+    if (window.location.hash === '#apps') showTab('apps', document.querySelector('[onclick*="apps"]'));
   });
 
   function showTab(tab, btn) {
