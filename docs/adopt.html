@@ -115,15 +115,22 @@
 
       <!-- STEP 2: О себе -->
       <div id="step2" class="form-card" style="max-width:100%;display:none">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:4px">
-          <div>
-            <h2 class="form-title">Шаг 2. Расскажи о себе</h2>
-            <p class="form-subtitle">Нам важно убедиться, что питомец попадёт в хорошие руки.</p>
+        <h2 class="form-title">Шаг 2. Расскажи о себе</h2>
+        <p class="form-subtitle">Нам важно убедиться, что питомец попадёт в хорошие руки.</p>
+
+        <div id="autofillNotice" style="display:none;margin-bottom:24px">
+          <div style="background:linear-gradient(135deg,rgba(91,123,94,.1),rgba(91,123,94,.06));border:1.5px solid rgba(91,123,94,.25);border-radius:var(--radius-md);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--sage);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;flex-shrink:0">✓</div>
+              <div>
+                <div style="font-weight:700;font-size:.9rem;color:var(--sage-dark)">Данные из профиля</div>
+                <div style="font-size:.8rem;color:var(--brown-mid);margin-top:2px">Поля заполнены автоматически — можно не редактировать</div>
+              </div>
+            </div>
+            <button id="skipStep2Btn" onclick="skipToStep3()" style="display:inline-flex;align-items:center;gap:8px;background:var(--sage);color:#fff;border:none;border-radius:50px;padding:10px 22px;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .25s;white-space:nowrap;box-shadow:0 4px 14px rgba(91,123,94,.35)" onmouseover="this.style.background='var(--sage-dark)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='var(--sage)';this.style.transform='none'">
+              Пропустить шаг <span style="font-size:1rem">→</span>
+            </button>
           </div>
-          <button id="skipStep2Btn" class="btn btn-ghost btn-sm" onclick="skipToStep3()" style="display:none;white-space:nowrap;flex-shrink:0">Пропустить →</button>
-        </div>
-        <div id="autofillNotice" style="display:none;background:rgba(91,123,94,.1);border:1px solid rgba(91,123,94,.2);border-radius:var(--radius-sm);padding:10px 14px;font-size:.83rem;color:var(--sage-dark);margin-bottom:20px">
-          ✓ Данные заполнены из твоего профиля — можешь пропустить этот шаг или изменить
         </div>
 
         <div class="form-row">
@@ -251,7 +258,6 @@
       // If profile is sufficiently filled — show skip button and notice
       const profileFilled = user.name && user.email && user.phone && user.address && user.housingType;
       if (profileFilled) {
-        document.getElementById('skipStep2Btn').style.display = 'inline-flex';
         document.getElementById('autofillNotice').style.display = 'block';
       }
     }
