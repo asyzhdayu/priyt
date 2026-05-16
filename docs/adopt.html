@@ -115,8 +115,16 @@
 
       <!-- STEP 2: О себе -->
       <div id="step2" class="form-card" style="max-width:100%;display:none">
-        <h2 class="form-title">Шаг 2. Расскажи о себе</h2>
-        <p class="form-subtitle">Нам важно убедиться, что питомец попадёт в хорошие руки.</p>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:4px">
+          <div>
+            <h2 class="form-title">Шаг 2. Расскажи о себе</h2>
+            <p class="form-subtitle">Нам важно убедиться, что питомец попадёт в хорошие руки.</p>
+          </div>
+          <button id="skipStep2Btn" class="btn btn-ghost btn-sm" onclick="skipToStep3()" style="display:none;white-space:nowrap;flex-shrink:0">Пропустить →</button>
+        </div>
+        <div id="autofillNotice" style="display:none;background:rgba(91,123,94,.1);border:1px solid rgba(91,123,94,.2);border-radius:var(--radius-sm);padding:10px 14px;font-size:.83rem;color:var(--sage-dark);margin-bottom:20px">
+          ✓ Данные заполнены из твоего профиля — можешь пропустить этот шаг или изменить
+        </div>
 
         <div class="form-row">
           <div class="form-group">
@@ -234,6 +242,18 @@
       document.getElementById('aName').value = user.name || '';
       document.getElementById('aEmail').value = user.email || '';
       document.getElementById('aPhone').value = user.phone || '';
+
+      // Address & housing from profile
+      if (user.address) document.getElementById('aAddress').value = user.address;
+      if (user.housingType) document.getElementById('aHousing').value = user.housingType;
+      if (user.hasOtherPets) document.getElementById('aOtherPets').checked = true;
+
+      // If profile is sufficiently filled — show skip button and notice
+      const profileFilled = user.name && user.email && user.phone && user.address && user.housingType;
+      if (profileFilled) {
+        document.getElementById('skipStep2Btn').style.display = 'inline-flex';
+        document.getElementById('autofillNotice').style.display = 'block';
+      }
     }
 
     // Check if coming from pet card
@@ -299,6 +319,19 @@
     selectedPetId = null;
     document.getElementById('selectedPetBanner').style.display = 'none';
     searchPets(document.getElementById('petSearch').value);
+  }
+
+  function skipToStep3() {
+    // Fill minimal required data from user if empty
+    const user = getCurrentUser();
+    if (user) {
+      if (!document.getElementById('aName').value) document.getElementById('aName').value = user.name || '';
+      if (!document.getElementById('aEmail').value) document.getElementById('aEmail').value = user.email || '';
+      if (!document.getElementById('aPhone').value) document.getElementById('aPhone').value = user.phone || '';
+      if (!document.getElementById('aAddress').value && user.address) document.getElementById('aAddress').value = user.address;
+      if (!document.getElementById('aHousing').value && user.housingType) document.getElementById('aHousing').value = user.housingType;
+    }
+    goToStep(3);
   }
 
   function goToStep(step) {
