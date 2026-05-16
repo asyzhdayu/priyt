@@ -54,7 +54,20 @@
     align-items: start;
   }
   @media (max-width: 768px) {
-    .profile-layout { grid-template-columns: 1fr; }
+    .profile-layout { grid-template-columns: 1fr; gap: 16px; }
+    .profile-sidebar { padding: 20px 16px; position: static; }
+    .profile-panel { padding: 20px 16px; }
+    .panel-title { font-size: 1.15rem; }
+    .panel-subtitle { margin-bottom: 20px; }
+    .fav-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .app-item { padding: 16px 14px; gap: 12px; }
+    .app-icon { font-size: 1.6rem; }
+  }
+  @media (max-width: 480px) {
+    .sidebar-nav { flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; margin-top: 16px; }
+    .sidebar-link { white-space: nowrap; flex-direction: column; gap: 4px; padding: 8px 12px; font-size: .78rem; }
+    .fav-grid { grid-template-columns: repeat(2, 1fr); }
+    .fav-card-photo { height: 90px; font-size: 2.2rem; }
   }
 
   .profile-sidebar {

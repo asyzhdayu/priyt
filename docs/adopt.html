@@ -42,7 +42,7 @@
 </div>
 
 <!-- HERO MINI -->
-<div style="background:linear-gradient(135deg,rgba(196,98,45,.08),rgba(91,123,94,.06));padding:120px 0 48px;border-bottom:1px solid var(--cream-dark)">
+<div class="page-hero">
   <div class="container">
     <div class="hero-badge" style="margin-bottom:16px">❤️ Усыновление</div>
     <h1 style="margin-bottom:12px">Хочу взять питомца домой</h1>
@@ -88,6 +88,10 @@
         }
         .step-dot.active { background: var(--terracotta); color: #fff; box-shadow: 0 4px 12px rgba(196,98,45,.4); }
         .step-dot.done { background: var(--success); color: #fff; }
+        @media(max-width:480px) {
+          .step-dot { width: 30px; height: 30px; font-size: .75rem; }
+          #petSearchResults { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+        }
       </style>
 
       <!-- STEP 1: Выбор питомца -->

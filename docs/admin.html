@@ -179,6 +179,31 @@
     overflow: hidden; flex-shrink: 0;
   }
   .pet-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  @media(max-width: 768px) {
+    .admin-wrap { padding: 72px 14px 40px; }
+    .admin-header { flex-direction: column; align-items: flex-start; }
+    .admin-header .btn { width: 100%; justify-content: center; }
+    .admin-title { font-size: 1.5rem; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat-card { padding: 14px 12px; gap: 10px; }
+    .stat-card-icon { font-size: 1.4rem; }
+    .stat-card-num { font-size: 1.4rem; }
+    .admin-tabs { gap: 2px; }
+    .admin-tab { padding: 8px 12px; font-size: .82rem; }
+    .filters { flex-direction: column; gap: 10px; }
+    .filters .form-control { width: 100%; }
+    .tbl { font-size: .82rem; }
+    .tbl th, .tbl td { padding: 9px 10px; }
+    .tbl th:nth-child(3), .tbl td:nth-child(3),
+    .tbl th:nth-child(6), .tbl td:nth-child(6) { display: none; }
+  }
+  @media(max-width: 480px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .tbl th:nth-child(4), .tbl td:nth-child(4) { display: none; }
+    .admin-tab { font-size: .76rem; padding: 7px 10px; }
+    .app-detail-grid { grid-template-columns: 1fr; }
+  }
 </style>
 
 <div class="admin-wrap">
