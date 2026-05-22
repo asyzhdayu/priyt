@@ -80,7 +80,15 @@ priyt/
 │       └── data.js      ← API-клиент
 └── backend/             ← Node.js + Express + MongoDB
     ├── server.js
+    ├── seed.js
     ├── models/
+        ├── Application.js
+        ├── Pet.js
+        ├── User.js
     ├── routes/
+        ├── application.js
+        ├── pets.js
+        ├──users.js
     └── middleware/
+        └── auth.js  
 ```
