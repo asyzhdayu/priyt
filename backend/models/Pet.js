@@ -15,8 +15,10 @@ const petSchema = new mongoose.Schema(
     vaccinated: { type: Boolean, default: false },
     sterilized: { type: Boolean, default: false },
     featured: { type: Boolean, default: false },
-    // Фото хранится как base64-строка или URL
+    // Основное фото (обратная совместимость)
     photo: { type: String, default: null },
+    // Галерея (до 6 фото)
+    photos: { type: [String], default: [] },
     dateAdded: { type: Date, default: Date.now },
   },
   {

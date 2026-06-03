@@ -1654,3 +1654,37 @@ textarea.form-control { resize: vertical; min-height: 100px; }
     font-size: 0.9rem;
   }
 }
+
+/* ===== IMPROVEMENTS ===== */
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Scroll-to-top button */
+#scrollTopBtn:hover {
+  background: var(--terracotta-dark) !important;
+  transform: translateY(-3px);
+}
+
+/* Server banner spin */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Fav badge */
+#favBadge { display: none; }
+
+/* Load more button focus */
+#loadMoreBtn:focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 3px;
+}
+
+/* 404 page body centering */
+.notfound-wrap {
+  background: var(--cream);
+}

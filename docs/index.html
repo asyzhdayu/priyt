@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Приютик! — Найди своего питомца</title>
+  <meta property="og:title" content="Приютик! — Найди своего питомца">
+  <meta property="og:description" content="Сотни животных ждут своей семьи. Найди верного друга в онлайн-приюте «Приютик»!">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://asyzhdayu.github.io/priyt/index.html">
+  <meta property="og:image" content="https://asyzhdayu.github.io/priyt/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Приютик! — Найди своего питомца">
+  <meta name="twitter:description" content="Сотни животных ждут своей семьи. Найди верного друга в онлайн-приюте «Приютик»!">
   <link rel="stylesheet" href="css/main.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
   <link rel="preconnect" href="https://shelterr-production.up.railway.app">
@@ -21,7 +29,8 @@
     <li><a href="index.html" class="nav-link active">Главная</a></li>
     <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
     <li><a href="adopt.html" class="nav-link">Взять животное</a></li>
-    <li><a href="surrender.html" class="nav-link">Отдать животное</a></li>
+    <li><a href="donate.html" class="nav-link">💛 Помочь</a></li>
+    <li><a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a></li>
   </ul>
   <div class="navbar-actions">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
@@ -33,6 +42,11 @@
       <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
       <button class="btn btn-outline btn-sm" onclick="handleLogout()">Выйти</button>
     </div>
+    <a href="profile.html#favorites" id="navFavLink" style="display:none;position:relative" title="Избранное">
+      <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--cream-dark);font-size:1.1rem;transition:var(--transition)">❤️
+        <span id="favBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--terracotta);color:#fff;font-size:.62rem;font-weight:800;width:17px;height:17px;border-radius:50%;align-items:center;justify-content:center;border:2px solid var(--cream)">0</span>
+      </span>
+    </a>
     <a href="admin.html" id="navAdmin" class="btn btn-sm" style="display:none;background:var(--espresso);color:#fff">⚙️ Админ</a>
     <button class="hamburger" id="hamburger">☰</button>
   </div>
@@ -43,7 +57,8 @@
   <a href="index.html" class="nav-link">🏠 Главная</a>
   <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
   <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
-  <a href="surrender.html" class="nav-link">🏡 Отдать животное</a>
+  <a href="donate.html" class="nav-link">💛 Помочь</a>
+  <a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a>
   <a href="profile.html" class="nav-link">👤 Мой профиль</a>
 </div>
 
@@ -186,6 +201,16 @@
     <div class="pets-grid" id="petsGrid">
       <div class="loading-center"><div class="spinner"></div></div>
     </div>
+
+    <!-- LOAD MORE -->
+    <div style="text-align:center;margin-top:40px">
+      <button id="loadMoreBtn" onclick="loadMore()"
+        style="display:none;align-items:center;gap:8px;background:var(--white);border:2px solid var(--terracotta);color:var(--terracotta);padding:14px 36px;border-radius:50px;font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition)"
+        onmouseover="this.style.background='var(--terracotta)';this.style.color='#fff'"
+        onmouseout="this.style.background='var(--white)';this.style.color='var(--terracotta)'">
+        🐾 Загрузить ещё
+      </button>
+    </div>
   </div>
 </section>
 
@@ -281,28 +306,12 @@
         <div class="footer-heading">Навигация</div>
         <ul class="footer-links">
           <li><a href="index.html">Главная</a></li>
-          <li><a href="index.html#catalog">Каталог питомцев</a></li>
+          <li><a href="index.html#catalog">Питомцы</a></li>
           <li><a href="adopt.html">Взять животное</a></li>
           <li><a href="surrender.html">Отдать животное</a></li>
+          <li><a href="donate.html">💛 Помочь</a></li>
+          <li><a href="volunteer.html">🤝 Волонтёрство</a></li>
         </ul>
-      </div>
-      <div>
-        <div class="footer-heading">Аккаунт</div>
-        <ul class="footer-links">
-          <li><a href="login.html">Войти</a></li>
-          <li><a href="login.html?tab=register">Регистрация</a></li>
-          <li><a href="profile.html">Мой профиль</a></li>
-          <li><a href="profile.html#favorites">Избранное</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="footer-heading">Контакты</div>
-        <div class="footer-contact">
-          📍 Москва, ул. Мясниковская, 1<br>
-          📞 +7 (911) 111-11-11<br>
-          📧 hello@priutdoma.ru<br>
-          🕐 Пн–Вс: 9:00–20:00
-        </div>
       </div>
     </div>
     <div class="footer-bottom">
@@ -315,86 +324,188 @@
 <!-- PET DETAIL MODAL -->
 <div class="modal-overlay" id="petModal"></div>
 
+<!-- SERVER SLEEP BANNER -->
+<div id="serverBanner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:999;background:var(--espresso);color:var(--cream);padding:12px 22px;border-radius:50px;font-size:.85rem;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;opacity:0;transition:opacity .4s">
+  <span style="animation:spin 1s linear infinite;display:inline-block">⏳</span>
+  <span>Сервер просыпается, подождите пару секунд…</span>
+</div>
+
+<!-- SCROLL TO TOP -->
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+  style="display:none;position:fixed;bottom:28px;right:28px;z-index:998;width:46px;height:46px;border-radius:50%;background:var(--terracotta);color:#fff;font-size:1.2rem;border:none;cursor:pointer;box-shadow:var(--shadow-md);transition:var(--transition);opacity:0">
+  ↑
+</button>
+
 <!-- SCRIPTS -->
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>
-  // ===== CATALOG STATE =====
-  const filters = {
-    search: '',
-    species: 'all',
-    status: 'all',
-    gender: 'all',
-    size: 'all',
-    sort: 'newest'
-  };
+  // ===== STATE =====
+  const filters = { search:'', species:'all', status:'all', gender:'all', size:'all', sort:'newest' };
+  const PAGE_SIZE = 12;
+  let currentPage = 1;
+  let totalPages  = 1;
+  let allLoaded   = false;
 
   // ===== INIT =====
   document.addEventListener('DOMContentLoaded', () => {
     initNavbar();
     initScrollReveal();
     initCounters();
+    initScrollTop();
+    updateFavBadge();
 
-    // Грузим параллельно
-    Promise.all([loadCatalog(), updateHeroStats()]);
+    Promise.all([loadCatalog(true), updateHeroStats(), checkServerAwake()]);
 
-    document.getElementById('searchInput')?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') applyFilters();
+    // Автокомплит поиска
+    initSearchAutocomplete('searchInput', (id, name) => {
+      // Перейти к питомцу по клику на подсказку
+      openPetModal(id);
     });
 
-    document.getElementById('searchInput')?.addEventListener('input', debounce(applyFilters, 400));
+    document.getElementById('searchInput')?.addEventListener('input', debounce(() => { resetPagination(); applyFilters(); }, 400));
+    document.getElementById('searchInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') { resetPagination(); applyFilters(); } });
   });
 
-  async function updateHeroStats() {
-    const stats = await getStats();
-    document.getElementById('heroTotal').textContent = stats.total;
-    document.getElementById('heroAvail').textContent = stats.available;
-    document.getElementById('heroAdopted').textContent = stats.adopted;
+  // ===== SERVER WAKE CHECK =====
+  async function checkServerAwake() {
+    const banner = document.getElementById('serverBanner');
+    const t = setTimeout(() => { banner.style.display = 'flex'; setTimeout(() => banner.style.opacity = '1', 10); }, 1500);
+    try {
+      await fetch(API_URL + '/api/health');
+    } catch(e) {}
+    clearTimeout(t);
+    banner.style.opacity = '0';
+    setTimeout(() => banner.style.display = 'none', 400);
   }
 
+  // ===== SCROLL TO TOP =====
+  function initScrollTop() {
+    const btn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+      const show = window.scrollY > 400;
+      btn.style.display = show ? 'block' : 'none';
+      setTimeout(() => btn.style.opacity = show ? '1' : '0', 10);
+    }, { passive: true });
+  }
+
+  // ===== FAV BADGE =====
+  async function updateFavBadge() {
+    if (!getCurrentUser()) return;
+    const favs = await getFavorites().catch(() => []);
+    const badge = document.getElementById('favBadge');
+    if (!badge) return;
+    badge.textContent = favs.length;
+    badge.style.display = favs.length > 0 ? 'flex' : 'none';
+  }
+
+  // ===== STATS =====
+  async function updateHeroStats() {
+    const stats = await getStats();
+    const animate = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) { el.dataset.target = val; animateCounter(el, val); }
+    };
+    animate('heroTotal', stats.total);
+    animate('heroAvail', stats.available);
+    animate('heroAdopted', stats.adopted);
+  }
+
+  // ===== FILTERS =====
   function setSpecies(species, btn) {
     filters.species = species;
     document.querySelectorAll('#speciesFilter .filter-chip').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
-    applyFilters();
+    resetPagination(); applyFilters();
   }
 
   function applyFilters() {
     filters.search = document.getElementById('searchInput')?.value || '';
     filters.status = document.getElementById('statusFilter')?.value || 'all';
     filters.gender = document.getElementById('genderFilter')?.value || 'all';
-    filters.size = document.getElementById('sizeFilter')?.value || 'all';
-    filters.sort = document.getElementById('sortFilter')?.value || 'newest';
-    loadCatalog();
+    filters.size   = document.getElementById('sizeFilter')?.value || 'all';
+    filters.sort   = document.getElementById('sortFilter')?.value || 'newest';
+    loadCatalog(true);
   }
 
-  async function loadCatalog() {
-    const grid = document.getElementById('petsGrid');
+  function resetPagination() { currentPage = 1; allLoaded = false; }
+
+  // ===== SKELETON =====
+  function skeletonCards(n = 8) {
+    return Array.from({length: n}, () => `
+      <div style="border-radius:var(--radius-md);overflow:hidden;background:var(--white);border:1px solid var(--cream-dark)">
+        <div style="height:220px;background:linear-gradient(90deg,var(--cream-dark) 25%,var(--cream) 50%,var(--cream-dark) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite"></div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="height:18px;border-radius:8px;background:linear-gradient(90deg,var(--cream-dark) 25%,var(--cream) 50%,var(--cream-dark) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;width:60%"></div>
+          <div style="height:14px;border-radius:8px;background:linear-gradient(90deg,var(--cream-dark) 25%,var(--cream) 50%,var(--cream-dark) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;width:80%"></div>
+          <div style="height:14px;border-radius:8px;background:linear-gradient(90deg,var(--cream-dark) 25%,var(--cream) 50%,var(--cream-dark) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;width:45%"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ===== LOAD CATALOG =====
+  async function loadCatalog(reset = false) {
+    const grid    = document.getElementById('petsGrid');
     const countEl = document.getElementById('resultsCount');
+    const moreBtn = document.getElementById('loadMoreBtn');
     if (!grid) return;
 
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--brown-mid);font-size:1.1rem">🐾 Загружаем питомцев...</div>`;
-
-    const pets = await filterPets(filters);
-
-    if (countEl) {
-      countEl.textContent = pets.length === 0
-        ? 'Питомцы не найдены'
-        : `Найдено: ${pets.length} ${declension(pets.length, ['питомец', 'питомца', 'питомцев'])}`;
+    if (reset) {
+      currentPage = 1;
+      grid.innerHTML = `<style>@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}</style>` + skeletonCards();
+      if (moreBtn) moreBtn.style.display = 'none';
     }
 
-    if (pets.length === 0) {
+    let result;
+    try {
+      result = await filterPets({ ...filters, page: currentPage, limit: PAGE_SIZE });
+    } catch(e) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--error)">Не удалось загрузить питомцев. <button class="btn btn-outline btn-sm" onclick="loadCatalog(true)" style="margin-left:8px">Повторить</button></div>`;
+      return;
+    }
+
+    // Бэкенд вернул объект с пагинацией или просто массив (обратная совместимость)
+    const pets  = Array.isArray(result) ? result : (result.pets || []);
+    const total = Array.isArray(result) ? pets.length : (result.total || pets.length);
+    totalPages  = Array.isArray(result) ? 1 : (result.pages || 1);
+
+    if (countEl) {
+      countEl.textContent = total === 0
+        ? 'Питомцы не найдены'
+        : `Найдено: ${total} ${declension(total, ['питомец', 'питомца', 'питомцев'])}`;
+    }
+
+    if (pets.length === 0 && reset) {
       grid.innerHTML = `
         <div class="empty-state" style="grid-column:1/-1">
           <div class="empty-icon">🐾</div>
           <h3>Никого не нашли</h3>
           <p>Попробуй изменить фильтры или поисковый запрос</p>
-        </div>
-      `;
+        </div>`;
+      if (moreBtn) moreBtn.style.display = 'none';
       return;
     }
 
-    grid.innerHTML = pets.map(pet => renderPetCard(pet)).join('');
+    // Рендерим карточки асинхронно (renderPetCard — async из-за isFavorite)
+    const cards = await Promise.all(pets.map(p => renderPetCard(p)));
+
+    if (reset) grid.innerHTML = cards.join('');
+    else       grid.insertAdjacentHTML('beforeend', cards.join(''));
+
+    // Кнопка «Загрузить ещё»
+    allLoaded = currentPage >= totalPages;
+    if (moreBtn) {
+      moreBtn.style.display = allLoaded ? 'none' : 'flex';
+    }
+  }
+
+  async function loadMore() {
+    if (allLoaded) return;
+    currentPage++;
+    const btn = document.getElementById('loadMoreBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Загружаем...'; }
+    await loadCatalog(false);
+    if (btn) { btn.disabled = false; btn.textContent = '🐾 Загрузить ещё'; }
   }
 
   function handleLogout() {

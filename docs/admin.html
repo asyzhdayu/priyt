@@ -223,6 +223,8 @@
     <button class="admin-tab active" onclick="switchTab('pets',this)">🐾 Питомцы</button>
     <button class="admin-tab" onclick="switchTab('apps',this)">📋 Заявки</button>
     <button class="admin-tab hidden" onclick="switchTab('users',this)" id="tabBtnUsers">👥 Пользователи</button>
+    <button class="admin-tab" onclick="switchTab('donations',this)" id="tabBtnDonations">💛 Доноры</button>
+    <button class="admin-tab" onclick="switchTab('volunteers',this)" id="tabBtnVolunteers">🤝 Волонтёры</button>
   </div>
 
   <!-- PETS -->
@@ -249,18 +251,34 @@
 
   <!-- APPS -->
   <div id="panelApps" class="admin-panel">
-    <div class="filters">
-      <select class="form-control" id="appTypeF" onchange="loadApps()">
-        <option value="all">Все типы</option>
-        <option value="adopt">Усыновление</option>
-        <option value="surrender">Передача</option>
-      </select>
-      <select class="form-control" id="appStatusF" onchange="loadApps()">
-        <option value="all">Все статусы</option>
-        <option value="pending">На рассмотрении</option>
-        <option value="approved">Одобренные</option>
-        <option value="rejected">Отклонённые</option>
-      </select>
+    <!-- Быстрые фильтры заявок -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+      <span style="font-size:.82rem;color:var(--brown-mid);font-weight:600;margin-right:4px">Тип:</span>
+      <button class="pill-btn active" data-type-btn="all"     onclick="setAppTypeFilter('all',this)"      >Все</button>
+      <button class="pill-btn"        data-type-btn="adopt"   onclick="setAppTypeFilter('adopt',this)"    >❤️ Усыновление</button>
+      <button class="pill-btn"        data-type-btn="surrender" onclick="setAppTypeFilter('surrender',this)">🏡 Передача</button>
+      <span style="display:inline-block;width:1px;height:20px;background:var(--cream-dark);margin:0 4px"></span>
+      <span style="font-size:.82rem;color:var(--brown-mid);font-weight:600;margin-right:4px">Статус:</span>
+      <button class="pill-btn active" data-status-btn="all"      onclick="setAppStatusFilter('all',this)"      >Все</button>
+      <button class="pill-btn"        data-status-btn="pending"  onclick="setAppStatusFilter('pending',this)"  >⏳ Новые</button>
+      <button class="pill-btn"        data-status-btn="reviewing" onclick="setAppStatusFilter('reviewing',this)">🔍 В работе</button>
+      <button class="pill-btn"        data-status-btn="approved" onclick="setAppStatusFilter('approved',this)" >✅ Одобрены</button>
+      <button class="pill-btn"        data-status-btn="rejected" onclick="setAppStatusFilter('rejected',this)" >❌ Отклонены</button>
+      <span id="appsBadge" style="margin-left:auto;font-size:.82rem;color:var(--brown-mid)"></span>
+    </div>
+    <style>
+      .pill-btn {
+        padding: 6px 14px; border-radius: 50px; font-size: .8rem; font-weight: 600;
+        border: 1.5px solid var(--cream-dark); background: var(--white); color: var(--brown-mid);
+        cursor: pointer; transition: var(--transition);
+      }
+      .pill-btn:hover  { border-color: var(--terracotta); color: var(--terracotta); }
+      .pill-btn.active { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
+    </style>
+    <!-- Hidden selects for JS compatibility -->
+    <div style="display:none">
+      <select id="appTypeF"><option value="all">all</option><option value="adopt">adopt</option><option value="surrender">surrender</option></select>
+      <select id="appStatusF"><option value="all">all</option><option value="pending">pending</option><option value="reviewing">reviewing</option><option value="approved">approved</option><option value="rejected">rejected</option></select>
     </div>
     <div class="tbl-wrap"><div style="overflow-x:auto">
       <table class="tbl">
@@ -287,6 +305,57 @@
         <tbody id="usersBody"></tbody>
       </table>
     </div></div>
+  </div>
+</div>
+
+<!-- DONATIONS PANEL -->
+<div id="panelDonations" class="admin-panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-weight:700;font-size:1.1rem">Пожертвования</div>
+      <div style="font-size:.82rem;color:var(--brown-mid)" id="donationsCount"></div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openGoalModal()">+ Новый сбор</button>
+  </div>
+
+  <!-- Goals -->
+  <div style="font-weight:700;margin-bottom:12px">Активные сборы</div>
+  <div id="goalsAdminList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:32px"></div>
+
+  <!-- Donations table -->
+  <div style="font-weight:700;margin-bottom:12px">Все пожертвования</div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr>
+        <th>Имя</th><th>Email</th><th>Сумма</th><th>Цель</th><th>Комментарий</th><th>Дата</th>
+      </tr></thead>
+      <tbody id="donationsBody"><tr><td colspan="6" style="text-align:center;padding:24px;color:var(--brown-mid)">Загружаем...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- VOLUNTEERS PANEL -->
+<div id="panelVolunteers" class="admin-panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-weight:700;font-size:1.1rem">Волонтёры</div>
+      <div style="font-size:.82rem;color:var(--brown-mid)" id="volunteersCount"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="pill-btn active" data-vstatus="all"       onclick="setVolFilter('all',this)">Все</button>
+      <button class="pill-btn"        data-vstatus="new"       onclick="setVolFilter('new',this)">🆕 Новые</button>
+      <button class="pill-btn"        data-vstatus="contacted" onclick="setVolFilter('contacted',this)">📞 Связались</button>
+      <button class="pill-btn"        data-vstatus="active"    onclick="setVolFilter('active',this)">✅ Активные</button>
+      <button class="pill-btn"        data-vstatus="inactive"  onclick="setVolFilter('inactive',this)">❌ Неактивные</button>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr>
+        <th>Имя</th><th>Email</th><th>Телефон</th><th>Направления</th><th>График</th><th>Статус</th><th>Дата</th><th></th>
+      </tr></thead>
+      <tbody id="volunteersBody"><tr><td colspan="8" style="text-align:center;padding:24px;color:var(--brown-mid)">Загружаем...</td></tr></tbody>
+    </table>
   </div>
 </div>
 
@@ -494,10 +563,13 @@
   function switchTab(tab, btn) {
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
-    btn.classList.add('active');
-    if (tab === 'apps')  loadApps();
-    if (tab === 'users') loadUsers();
+    const panel = document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    if (panel) panel.classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (tab === 'apps')       loadApps();
+    if (tab === 'users')      loadUsers();
+    if (tab === 'donations')  loadDonationsAdmin();
+    if (tab === 'volunteers') loadVolunteersAdmin();
   }
 
   // ── Pets ─────────────────────────────────────────────────
@@ -539,6 +611,19 @@
   }
 
   // ── Apps ─────────────────────────────────────────────────
+  function setAppTypeFilter(val, btn) {
+    document.querySelectorAll('[data-type-btn]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('appTypeF').value = val;
+    loadApps();
+  }
+  function setAppStatusFilter(val, btn) {
+    document.querySelectorAll('[data-status-btn]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('appStatusF').value = val;
+    loadApps();
+  }
+
   async function loadApps() {
     const tf = document.getElementById('appTypeF').value;
     const sf = document.getElementById('appStatusF').value;
@@ -555,6 +640,8 @@
       tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--brown-mid)">Заявок нет</td></tr>`;
       return;
     }
+    const badge = document.getElementById('appsBadge');
+    if (badge) badge.textContent = `Показано: ${apps.length}`;
     tbody.innerHTML = apps.map(a => `
       <tr>
         <td><span style="font-size:1.1rem">${a.type === 'adopt' ? '❤️' : '🏡'}</span> ${a.type === 'adopt' ? 'Усыновление' : 'Передача'}</td>
@@ -587,8 +674,12 @@
   }
 
   async function setAppStatus(id, status) {
-    await updateApplication(id, { status });
-    showToast(status === 'approved' ? '✅ Заявка одобрена' : 'Заявка отклонена', status === 'approved' ? 'success' : 'info');
+    let staffComment = '';
+    if (status === 'rejected') {
+      staffComment = prompt('Причина отклонения (необязательно):') || '';
+    }
+    await updateApplication(id, { status, staffComment });
+    showToast(status === 'approved' ? '✅ Заявка одобрена' : '❌ Заявка отклонена', status === 'approved' ? 'success' : 'info');
     loadApps(); loadStats();
   }
 
@@ -719,6 +810,7 @@
     document.getElementById('pfFeat').checked = false;
     document.getElementById('pfPhotoPreview').innerHTML = '';
     document.getElementById('pfPhoto').value = '';
+    petGalleryData = []; renderGalleryPreviews();
     openM('petModal');
   }
 
@@ -743,6 +835,7 @@
     document.getElementById('pfFeat').checked = p.featured || false;
     document.getElementById('pfPhotoPreview').innerHTML = p.photo
       ? `<div style="margin-top:8px"><img src="${p.photo}" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm)"></div>` : '';
+    petGalleryData = p.photos || []; renderGalleryPreviews();
     openM('petModal');
   }
 
@@ -763,7 +856,8 @@
       vaccinated: document.getElementById('pfVacc').checked,
       sterilized: document.getElementById('pfSter').checked,
       featured: document.getElementById('pfFeat').checked,
-      photo: petPhotoData
+      photo: petPhotoData,
+      photos: petGalleryData,
     };
     if (editingPetId) { await updatePet(editingPetId, data); showToast('Питомец обновлён ✅', 'success'); }
     else              { await addPet(data);                   showToast('Питомец добавлен ✅', 'success'); }
@@ -857,6 +951,208 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') document.querySelectorAll('.moverlay.open').forEach(el => closeM(el.id));
   });
+
+  // ── Donations (admin) ──────────────────────────────────────────────────────
+  let goalEditId = null;
+
+  async function loadDonationsAdmin() {
+    try {
+      const [donations, goals] = await Promise.all([getDonations(), getDonationGoals()]);
+      const countEl = document.getElementById('donationsCount');
+      const total   = donations.reduce((s, d) => s + d.amount, 0);
+      if (countEl) countEl.textContent = `Всего: ${donations.length} пожертвований на ${total.toLocaleString('ru-RU')} ₽`;
+
+      // Goals cards
+      const goalsList = document.getElementById('goalsAdminList');
+      if (goalsList) {
+        goalsList.innerHTML = goals.length ? goals.map(g => {
+          const pct = Math.min(100, Math.round((g.raisedAmount / g.targetAmount) * 100));
+          return `<div style="background:var(--white);border:1.5px solid var(--cream-dark);border-radius:var(--radius-md);padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+              <div style="font-weight:700">${g.emoji} ${g.title}</div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-ghost btn-sm" onclick="openGoalModal('${g._id || g.id}')">✏️</button>
+                <button class="btn btn-sm" style="background:rgba(214,64,64,.1);color:var(--error)" onclick="deleteGoalConfirm('${g._id || g.id}','${g.title.replace(/'/g,"\\'")}')">🗑️</button>
+              </div>
+            </div>
+            <div style="height:8px;background:var(--cream-dark);border-radius:99px;overflow:hidden;margin-bottom:6px">
+              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--terracotta),var(--gold));border-radius:99px"></div>
+            </div>
+            <div style="font-size:.8rem;color:var(--brown-mid);display:flex;justify-content:space-between">
+              <span>${g.raisedAmount.toLocaleString('ru-RU')} ₽ из ${g.targetAmount.toLocaleString('ru-RU')} ₽</span>
+              <span style="font-weight:700;color:var(--terracotta)">${pct}%</span>
+            </div>
+          </div>`;
+        }).join('') : '<div style="color:var(--brown-mid);font-size:.9rem">Нет активных сборов</div>';
+      }
+
+      // Donations table
+      const tbody = document.getElementById('donationsBody');
+      if (tbody) {
+        tbody.innerHTML = donations.length ? donations.map(d => `
+          <tr>
+            <td><strong>${d.anonymous ? '🎭 Аноним' : d.donorName}</strong></td>
+            <td>${d.anonymous ? '—' : d.donorEmail}</td>
+            <td style="font-weight:700;color:var(--terracotta)">${d.amount.toLocaleString('ru-RU')} ₽</td>
+            <td>${d.goalId?.title || '—'}</td>
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.comment || '—'}</td>
+            <td style="white-space:nowrap">${formatDate(d.date)}</td>
+          </tr>`).join('')
+          : '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--brown-mid)">Пожертвований пока нет</td></tr>';
+      }
+    } catch(e) { showToast('Ошибка загрузки донатов: ' + e.message, 'error'); }
+  }
+
+  function openGoalModal(id = null) {
+    goalEditId = id;
+    document.getElementById('goalModalTitle').textContent = id ? 'Редактировать сбор' : 'Новый сбор';
+    if (!id) {
+      ['goalTitle','goalDesc','goalEmoji','goalTarget','goalDeadline'].forEach(f => { const el = document.getElementById(f); if(el) el.value = f === 'goalEmoji' ? '💛' : ''; });
+      document.getElementById('goalActive').checked = true;
+    } else {
+      getDonationGoals().then(goals => {
+        const g = goals.find(x => (x._id || x.id) === id);
+        if (!g) return;
+        document.getElementById('goalTitle').value    = g.title;
+        document.getElementById('goalDesc').value     = g.description;
+        document.getElementById('goalEmoji').value    = g.emoji;
+        document.getElementById('goalTarget').value   = g.targetAmount;
+        document.getElementById('goalActive').checked = g.active;
+        document.getElementById('goalDeadline').value = g.deadline ? g.deadline.split('T')[0] : '';
+      });
+    }
+    openM('goalModal');
+  }
+
+  async function saveGoal() {
+    const title  = document.getElementById('goalTitle').value.trim();
+    const target = parseInt(document.getElementById('goalTarget').value);
+    if (!title || !target) { showToast('Заполните название и цель', 'error'); return; }
+    const data = {
+      title,
+      description: document.getElementById('goalDesc').value.trim(),
+      emoji:       document.getElementById('goalEmoji').value.trim() || '💛',
+      targetAmount: target,
+      active:      document.getElementById('goalActive').checked,
+      deadline:    document.getElementById('goalDeadline').value || null,
+    };
+    try {
+      if (goalEditId) { await updateDonationGoal(goalEditId, data); showToast('Сбор обновлён ✅', 'success'); }
+      else            { await createDonationGoal(data);              showToast('Сбор создан ✅', 'success'); }
+      closeM('goalModal'); loadDonationsAdmin();
+    } catch(e) { showToast(e.message, 'error'); }
+  }
+
+  async function deleteGoalConfirm(id, name) {
+    if (confirm(`Удалить сбор «${name}»?`)) {
+      await deleteDonationGoal(id); showToast('Сбор удалён', 'info'); loadDonationsAdmin();
+    }
+  }
+
+  // ── Volunteers (admin) ─────────────────────────────────────────────────────
+  let volStatusFilter = 'all';
+  const volStatusLabels = { new:'🆕 Новый', contacted:'📞 Связались', active:'✅ Активный', inactive:'❌ Неактивный' };
+  const volSkillLabels  = { walking:'Выгул', grooming:'Уход', photo:'Фото', vet:'Вет.', transport:'Транспорт', events:'Мероприятия', social:'Соцсети', other:'Другое' };
+  const volSchedLabels  = { weekdays:'Будни', weekends:'Выходные', evenings:'Вечера', flexible:'Гибко' };
+
+  function setVolFilter(status, btn) {
+    volStatusFilter = status;
+    document.querySelectorAll('[data-vstatus]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadVolunteersAdmin();
+  }
+
+  async function loadVolunteersAdmin() {
+    const tbody   = document.getElementById('volunteersBody');
+    const countEl = document.getElementById('volunteersCount');
+    try {
+      const vols = await getVolunteers(volStatusFilter);
+      if (countEl) countEl.textContent = `Показано: ${vols.length}`;
+      tbody.innerHTML = vols.length ? vols.map(v => `
+        <tr>
+          <td><strong>${v.name}</strong>${v.age ? `<br><span style="font-size:.75rem;color:var(--brown-mid)">${v.age} лет</span>` : ''}</td>
+          <td>${v.email}</td>
+          <td>${v.phone}</td>
+          <td style="max-width:140px"><div style="display:flex;flex-wrap:wrap;gap:3px">${(v.skills||[]).map(s=>`<span style="font-size:.7rem;background:var(--cream-dark);padding:2px 7px;border-radius:99px">${volSkillLabels[s]||s}</span>`).join('')}</div></td>
+          <td>${volSchedLabels[v.schedule]||v.schedule}</td>
+          <td>
+            <select class="form-control" style="padding:4px 8px;font-size:.8rem;width:auto" onchange="changeVolStatus('${v._id||v.id}',this.value)">
+              ${['new','contacted','active','inactive'].map(s=>`<option value="${s}"${v.status===s?' selected':''}>${volStatusLabels[s]}</option>`).join('')}
+            </select>
+          </td>
+          <td style="white-space:nowrap;font-size:.8rem">${formatDate(v.date)}</td>
+          <td>
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-ghost btn-sm" onclick="openVolDetail('${v._id||v.id}')" title="Подробнее">👁</button>
+              <button class="btn btn-sm" style="background:rgba(214,64,64,.1);color:var(--error)" onclick="deleteVolConfirm('${v._id||v.id}','${v.name.replace(/'/g,"\\'")}')">🗑️</button>
+            </div>
+          </td>
+        </tr>`).join('')
+        : '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--brown-mid)">Волонтёров пока нет</td></tr>';
+    } catch(e) { showToast('Ошибка загрузки волонтёров: ' + e.message, 'error'); }
+  }
+
+  async function changeVolStatus(id, status) {
+    try { await updateVolunteerStatus(id, status); showToast('Статус обновлён', 'success'); }
+    catch(e) { showToast(e.message, 'error'); }
+  }
+
+  async function openVolDetail(id) {
+    const vols = await getVolunteers('all');
+    const v = vols.find(x => (x._id||x.id) === id);
+    if (!v) return;
+    const skillStr = (v.skills||[]).map(s => volSkillLabels[s]||s).join(', ') || '—';
+    alert(`${v.name} (${v.age ? v.age+' лет' : 'возраст не указан'})\n📧 ${v.email}\n📞 ${v.phone}\n\nНаправления: ${skillStr}\nГрафик: ${volSchedLabels[v.schedule]||v.schedule}\n\nОпыт:\n${v.experience || '—'}\n\nМотивация:\n${v.motivation || '—'}`);
+  }
+
+  async function deleteVolConfirm(id, name) {
+    if (confirm(`Удалить волонтёра «${name}»?`)) {
+      await deleteVolunteer(id); showToast('Удалено', 'info'); loadVolunteersAdmin();
+    }
+  }
+
 </script>
+
+<!-- GOAL MODAL -->
+<div class="moverlay" id="goalModal">
+  <div class="mdialog" style="max-width:480px">
+    <div class="mdialog-header">
+      <div class="mdialog-title" id="goalModalTitle">Новый сбор</div>
+      <button class="mdialog-close" onclick="closeM('goalModal')">✕</button>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px">
+      <div class="form-group" style="flex:0 0 70px">
+        <label class="form-label">Эмодзи</label>
+        <input type="text" class="form-control" id="goalEmoji" value="💛" style="text-align:center;font-size:1.4rem">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Название *</label>
+        <input type="text" class="form-control" id="goalTitle" placeholder="Лечение Барсика">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Описание</label>
+      <textarea class="form-control" id="goalDesc" rows="2" placeholder="Подробности сбора..."></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">Цель (₽) *</label>
+        <input type="number" class="form-control" id="goalTarget" placeholder="50000" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Дедлайн</label>
+        <input type="date" class="form-control" id="goalDeadline">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <input type="checkbox" id="goalActive" checked style="width:18px;height:18px">
+      <label for="goalActive" style="font-size:.9rem;cursor:pointer">Активный сбор</label>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeM('goalModal')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveGoal()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

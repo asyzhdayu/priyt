@@ -1,50 +1,80 @@
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+const express     = require('express');
+const cors        = require('cors');
 const compression = require('compression');
-const mongoose = require('mongoose');
+const mongoose    = require('mongoose');
+const rateLimit   = require('express-rate-limit');
 
-const petsRouter = require('./routes/pets');
-const usersRouter = require('./routes/users');
+const petsRouter         = require('./routes/pets');
+const usersRouter        = require('./routes/users');
 const applicationsRouter = require('./routes/applications');
+const donationsRouter    = require('./routes/donations');
+const volunteersRouter   = require('./routes/volunteers');
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 8080;
 
+// ── Сжатие ───────────────────────────────────────────────────────────────────
 app.use(compression());
 
+// ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5500')
-  .split(',')
-  .map(o => o.trim());
+  .split(',').map(o => o.trim());
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS: origin ${origin} не разрешён`));
-    }
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+    else cb(new Error(`CORS: origin ${origin} не разрешён`));
   },
   credentials: true,
 }));
 
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
 
-// Cache-Control для GET запросов к питомцам (30 сек)
+// ── Rate limiting (защита от спама/brute-force) ───────────────────────────────
+// Общий лимит: 200 req/15 мин с одного IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Слишком много запросов, попробуйте позже' },
+});
+
+// Строгий лимит для auth: 20 попыток/15 мин
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Слишком много попыток входа, попробуйте через 15 минут' },
+});
+
+// Лимит на подачу заявок: 10/час с одного IP
+const applyLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Слишком много заявок, попробуйте позже' },
+});
+
+app.use(globalLimiter);
+app.use('/api/users/login',    authLimiter);
+app.use('/api/users/register', authLimiter);
+app.use('/api/applications',   applyLimiter);
+
+// ── Cache-Control для GET /api/pets ──────────────────────────────────────────
 app.use('/api/pets', (req, res, next) => {
-  if (req.method === 'GET') {
+  if (req.method === 'GET')
     res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
-  }
   next();
 });
 
-// ===== ROUTES =====
-app.use('/api/pets', petsRouter);
-app.use('/api/users', usersRouter);
+// ── Маршруты ─────────────────────────────────────────────────────────────────
+app.use('/api/pets',         petsRouter);
+app.use('/api/users',        usersRouter);
 app.use('/api/applications', applicationsRouter);
+app.use('/api/donations',    donationsRouter);
+app.use('/api/volunteers',   volunteersRouter);
 
-// Health check
+// ── Health check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -53,29 +83,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// 404
-app.use((req, res) => {
-  res.status(404).json({ error: 'Маршрут не найден' });
-});
-
-// Глобальный обработчик ошибок
+// ── Глобальный обработчик ошибок ─────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({ error: err.message || 'Внутренняя ошибка сервера' });
+  console.error(`[${new Date().toISOString()}] ERROR ${req.method} ${req.path}:`, err.message);
+  res.status(500).json({ error: 'Внутренняя ошибка сервера' });
 });
 
-// ===== MONGODB =====
-mongoose
-  .connect(process.env.MONGODB_URI)
+// ── Запуск ────────────────────────────────────────────────────────────────────
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅ MongoDB подключена');
-    app.listen(PORT, () => {
-      console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
-    });
+    app.listen(PORT, () => console.log(`🚀 Сервер: http://localhost:${PORT}`));
   })
   .catch(err => {
     console.error('❌ Ошибка подключения к MongoDB:', err.message);
     process.exit(1);
   });
-
-module.exports = app;

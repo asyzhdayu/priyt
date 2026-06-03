@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /profile.html
+Sitemap: https://asyzhdayu.github.io/priyt/sitemap.xml
