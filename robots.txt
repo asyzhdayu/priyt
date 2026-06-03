@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Отдать животное — Приютик!</title>
+  <meta property="og:title" content="Отдать животное — Приютик!">
+  <meta property="og:description" content="Нужно пристроить животное? Передайте питомца в хорошие руки через «Приютик»">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://asyzhdayu.github.io/priyt/surrender.html">
+  <meta property="og:image" content="https://asyzhdayu.github.io/priyt/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Отдать животное — Приютик!">
+  <meta name="twitter:description" content="Нужно пристроить животное? Передайте питомца в хорошие руки через «Приютик»">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+  <link rel="preconnect" href="https://shelterr-production.up.railway.app">
+  <link rel="dns-prefetch" href="https://shelterr-production.up.railway.app">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">
+    <div class="brand-icon">🐾</div>
+    Приютик!
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="index.html" class="nav-link">Главная</a></li>
+    <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
+    <li><a href="adopt.html" class="nav-link">Взять животное</a></li>
+    <li><a href="donate.html" class="nav-link">💛 Помочь</a></li>
+    <li><a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a></li>
+  </ul>
+  <div class="navbar-actions">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <div id="navAuth" style="display:flex;gap:8px">
+      <a href="login.html" class="btn btn-ghost btn-sm">Войти</a>
+      <a href="login.html?tab=register" class="btn btn-primary btn-sm">Регистрация</a>
+    </div>
+    <div id="navProfile" style="display:none;align-items:center;gap:10px">
+      <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
+      <button class="btn btn-outline btn-sm" onclick="logout();location.href='/priyt/'">Выйти</button>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" class="nav-link">🏠 Главная</a>
+  <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
+  <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
+  <a href="donate.html" class="nav-link">💛 Помочь</a>
+  <a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a>
+  <a href="profile.html" class="nav-link">👤 Мой профиль</a>
+</div>
+
+<!-- HERO MINI -->
+<div class="page-hero-green">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:16px">🏡 Передача животного</div>
+    <h1 style="margin-bottom:12px">Нужно отдать питомца?</h1>
+    <p style="color:var(--brown-mid);max-width:560px;font-size:1.05rem">Мы понимаем, что жизнь бывает непредсказуемой. Расскажи нам о своём животном — мы найдём ему лучший новый дом и позаботимся о нём, пока это не произойдёт.</p>
+  </div>
+</div>
+
+<!-- INFO CARDS -->
+<div style="background:var(--cream-dark);padding:40px 0">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px">
+      <div style="background:var(--white);border-radius:var(--radius-md);padding:24px;display:flex;gap:16px;align-items:flex-start;box-shadow:var(--shadow-sm)">
+        <div style="font-size:2rem;flex-shrink:0">🤝</div>
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">Без осуждения</div>
+          <div style="font-size:.85rem;color:var(--brown-mid)">Мы понимаем, что обстоятельства бывают разными. Наша задача — помочь животному.</div>
+        </div>
+      </div>
+      <div style="background:var(--white);border-radius:var(--radius-md);padding:24px;display:flex;gap:16px;align-items:flex-start;box-shadow:var(--shadow-sm)">
+        <div style="font-size:2rem;flex-shrink:0">🏠</div>
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">Заботливое место</div>
+          <div style="font-size:.85rem;color:var(--brown-mid)">Все животные живут в комфортных условиях и получают ветеринарную помощь.</div>
+        </div>
+      </div>
+      <div style="background:var(--white);border-radius:var(--radius-md);padding:24px;display:flex;gap:16px;align-items:flex-start;box-shadow:var(--shadow-sm)">
+        <div style="font-size:2rem;flex-shrink:0">📋</div>
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">Тщательный отбор</div>
+          <div style="font-size:.85rem;color:var(--brown-mid)">Мы проверяем всех усыновителей, чтобы питомец попал в хорошие руки.</div>
+        </div>
+      </div>
+      <div style="background:var(--white);border-radius:var(--radius-md);padding:24px;display:flex;gap:16px;align-items:flex-start;box-shadow:var(--shadow-sm)">
+        <div style="font-size:2rem;flex-shrink:0">🔔</div>
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">Обратная связь</div>
+          <div style="font-size:.85rem;color:var(--brown-mid)">Мы сообщим тебе, когда питомец найдёт новый дом, если ты хочешь знать.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="form-section">
+  <div class="container">
+    <div style="max-width:680px;margin:0 auto">
+
+      <!-- FORM -->
+      <div id="surrenderForm">
+        <div class="form-card" style="max-width:100%">
+          <h2 class="form-title">О вашем животном</h2>
+          <p class="form-subtitle">Расскажи нам о питомце как можно подробнее — это поможет быстрее найти ему новый дом.</p>
+
+          <!-- Фото -->
+          <div class="form-group">
+            <label class="form-label">Фото животного</label>
+            <div class="photo-upload-area" onclick="document.getElementById('sPhoto').click()" style="cursor:pointer;border:2px dashed var(--cream-dark);border-radius:var(--radius-md);padding:32px;text-align:center;transition:var(--transition)">
+              <div style="font-size:3rem;margin-bottom:8px">📷</div>
+              <div style="font-weight:600;margin-bottom:4px">Загрузи фото</div>
+              <div style="font-size:.85rem;color:var(--brown-mid)">Перетащи или нажми для выбора. JPG, PNG до 5MB</div>
+              <input type="file" id="sPhoto" accept="image/*" style="display:none">
+            </div>
+            <div id="sPhotoPreview"></div>
+          </div>
+
+          <!-- Основное -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="sName">Кличка <span class="required">*</span></label>
+              <input type="text" class="form-control" id="sName" placeholder="Имя животного">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sSpecies">Вид <span class="required">*</span></label>
+              <select class="form-control" id="sSpecies">
+                <option value="">Выбери вид</option>
+                <option value="cat">Кошка / кот</option>
+                <option value="dog">Собака</option>
+                <option value="rabbit">Кролик</option>
+                <option value="other">Другое</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="sBreed">Порода</label>
+              <input type="text" class="form-control" id="sBreed" placeholder="Или «беспородный»">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sColor">Окрас</label>
+              <input type="text" class="form-control" id="sColor" placeholder="Например: рыжий">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="sAge">Возраст <span class="required">*</span></label>
+              <input type="number" class="form-control" id="sAge" placeholder="Число" min="0" max="200">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sAgeUnit">Единица</label>
+              <select class="form-control" id="sAgeUnit">
+                <option value="months">Месяцев</option>
+                <option value="years" selected>Лет</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="sGender">Пол <span class="required">*</span></label>
+              <select class="form-control" id="sGender">
+                <option value="">Выбери</option>
+                <option value="male">Мальчик</option>
+                <option value="female">Девочка</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sSize">Размер</label>
+              <select class="form-control" id="sSize">
+                <option value="small">Маленький</option>
+                <option value="medium" selected>Средний</option>
+                <option value="large">Крупный</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-check">
+                <input type="checkbox" id="sVaccinated">
+                <span>Вакцинирован</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-check">
+                <input type="checkbox" id="sSterilized">
+                <span>Стерилизован / кастрирован</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sDescription">Описание характера <span class="required">*</span></label>
+            <textarea class="form-control" id="sDescription" rows="4" placeholder="Расскажи о характере, привычках, особенностях. С кем ладит, чего боится, что любит..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sReason">Причина передачи</label>
+            <select class="form-control" id="sReason">
+              <option value="">Укажи причину (необязательно)</option>
+              <option value="moving">Переезд</option>
+              <option value="allergy">Аллергия</option>
+              <option value="baby">Появился ребёнок</option>
+              <option value="financial">Финансовые трудности</option>
+              <option value="health">Состояние здоровья хозяина</option>
+              <option value="other">Другая причина</option>
+            </select>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--cream-dark);margin:28px 0">
+
+          <h3 style="font-size:1.15rem;margin-bottom:20px">Ваши контакты</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="sOwnerName">Имя <span class="required">*</span></label>
+              <input type="text" class="form-control" id="sOwnerName" placeholder="Ваше имя">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sOwnerPhone">Телефон <span class="required">*</span></label>
+              <input type="tel" class="form-control" id="sOwnerPhone" placeholder="+7 (999) 123-45-67">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sOwnerEmail">Email <span class="required">*</span></label>
+            <input type="email" class="form-control" id="sOwnerEmail" placeholder="your@email.com">
+          </div>
+
+          <div class="form-group">
+            <label class="form-check">
+              <input type="checkbox" id="sNotify">
+              <span>Хочу получить уведомление, когда питомец найдёт новый дом</span>
+            </label>
+          </div>
+
+          <div id="surrenderError" style="color:var(--error);font-size:.85rem;margin-bottom:16px;display:none"></div>
+
+          <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="submitSurrenderForm()">
+            🏡 Отправить заявку
+          </button>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="surrenderSuccess" style="display:none;text-align:center;padding:60px 24px">
+        <div style="font-size:5rem;margin-bottom:20px">🐾</div>
+        <h2 style="margin-bottom:12px">Заявка получена!</h2>
+        <p style="color:var(--brown-mid);max-width:440px;margin:0 auto 32px">Мы свяжемся с тобой в течение 1–2 рабочих дней, чтобы обсудить детали передачи. Спасибо, что доверяешь нам своего питомца.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <a href="index.html" class="btn btn-primary">На главную</a>
+          <a href="index.html#catalog" class="btn btn-outline">Посмотреть питомцев</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="navbar-brand" style="color:#fff;font-size:1.3rem">
+          <div class="brand-icon">🐾</div> Приютик!
+        </div>
+        <p>Мы помогаем бездомным животным найти любящие семьи с 2019 года.</p>
+      </div>
+      <div>
+        <div class="footer-heading">Навигация</div>
+        <ul class="footer-links">
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="index.html#catalog">Питомцы</a></li>
+          <li><a href="adopt.html">Взять животное</a></li>
+          <li><a href="surrender.html">Отдать животное</a></li>
+          <li><a href="donate.html">💛 Помочь</a></li>
+          <li><a href="volunteer.html">🤝 Волонтёрство</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Приютик!. Сделано с ❤️ для животных</span>
+      <span>🐾 Спасаем жизни каждый день</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  let surrenderPhotoData = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    initNavbar();
+
+    // Pre-fill user info
+    const user = getCurrentUser();
+    if (user) {
+      document.getElementById('sOwnerName').value = user.name || '';
+      document.getElementById('sOwnerEmail').value = user.email || '';
+      document.getElementById('sOwnerPhone').value = user.phone || '';
+    }
+
+    initPhotoUpload('sPhoto', 'sPhotoPreview', (data) => {
+      surrenderPhotoData = data;
+    });
+  });
+
+  async function submitSurrenderForm() {
+    const errorEl = document.getElementById('surrenderError');
+    errorEl.style.display = 'none';
+
+    const name = document.getElementById('sName').value.trim();
+    const species = document.getElementById('sSpecies').value;
+    const age = document.getElementById('sAge').value;
+    const gender = document.getElementById('sGender').value;
+    const description = document.getElementById('sDescription').value.trim();
+    const ownerName = document.getElementById('sOwnerName').value.trim();
+    const ownerPhone = document.getElementById('sOwnerPhone').value.trim();
+    const ownerEmail = document.getElementById('sOwnerEmail').value.trim();
+
+    if (!name || !species || !age || !gender || !description || !ownerName || !ownerPhone || !ownerEmail) {
+      errorEl.textContent = 'Заполни все обязательные поля';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    if (!validateEmail(ownerEmail)) {
+      errorEl.textContent = 'Введи корректный email';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const user = getCurrentUser();
+
+    // Save pet to catalog
+    const newPet = await addPet({
+      name,
+      species,
+      breed: document.getElementById('sBreed').value.trim() || 'Беспородный',
+      age: parseInt(age),
+      ageUnit: document.getElementById('sAgeUnit').value,
+      gender,
+      size: document.getElementById('sSize').value,
+      color: document.getElementById('sColor').value.trim() || 'Неизвестно',
+      description,
+      vaccinated: document.getElementById('sVaccinated').checked,
+      sterilized: document.getElementById('sSterilized').checked,
+      photo: surrenderPhotoData || null,
+      status: 'available'
+    });
+
+    // Save application
+    await addApplication({
+      type: 'surrender',
+      userId: user?.id || null,
+      petId: newPet.id || newPet._id,
+      petName: name,
+      applicantName: ownerName,
+      applicantEmail: ownerEmail,
+      applicantPhone: ownerPhone,
+      message: document.getElementById('sReason').value,
+      notifyOnAdopt: document.getElementById('sNotify').checked
+    });
+
+    document.getElementById('surrenderForm').style.display = 'none';
+    document.getElementById('surrenderSuccess').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
