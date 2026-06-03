@@ -320,7 +320,7 @@
 
   async function loadApps() {
     const list = document.getElementById('appsList');
-    const apps = await getUserApplications(currentUser.id);
+    const apps = await getUserApplications();
 
     if (apps.length === 0) {
       list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>Заявок пока нет</h3><p>Подай заявку на усыновление или передачу животного</p><a href="/priyt/adopt" class="btn btn-primary" style="margin-top:16px">Взять питомца</a></div>`;
@@ -355,14 +355,22 @@
 
   async function loadFavs() {
     const list = document.getElementById('favsList');
-    const favIds = await getFavorites();
+    list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--brown-mid)">Загружаем...</div>';
+    const favsRaw = await getFavorites();
 
-    if (favIds.length === 0) {
+    if (!favsRaw || favsRaw.length === 0) {
       list.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❤️</div><h3>Избранное пусто</h3><p>Добавляй понравившихся питомцев в избранное</p><a href="/priyt/#catalog" class="btn btn-primary" style="margin-top:16px">Смотреть питомцев</a></div>`;
       return;
     }
 
-    const pets = (await Promise.all(favIds.map(id => getPetById(id).catch(() => null)))).filter(Boolean);
+    // API может вернуть объекты питомцев или просто id-строки
+    let pets;
+    if (typeof favsRaw[0] === 'object' && favsRaw[0] !== null) {
+      pets = favsRaw.filter(Boolean);
+    } else {
+      pets = (await Promise.all(favsRaw.map(id => getPetById(id).catch(() => null)))).filter(Boolean);
+    }
+    const favIds = favsRaw; // для совместимости ниже
 
     if (pets.length === 0) {
       list.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❤️</div><h3>Питомцы не найдены</h3></div>`;

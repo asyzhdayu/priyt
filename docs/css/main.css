@@ -1688,3 +1688,166 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .notfound-wrap {
   background: var(--cream);
 }
+
+/* ===== FIXES: Volunteer & Donate мобильная адаптация ===== */
+
+@media (max-width: 768px) {
+  /* Volunteer */
+  .vol-stats {
+    margin: -20px auto 40px;
+    max-width: calc(100% - 32px);
+  }
+  .vol-stat { padding: 18px 10px; }
+  .vol-stat-num { font-size: 1.5rem; }
+
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .skill-card { padding: 14px 12px; gap: 10px; }
+  .skill-icon { font-size: 1.4rem; }
+  .skill-label { font-size: .82rem; }
+  .skill-desc { display: none; }
+
+  .schedule-opts { gap: 8px; }
+  .sched-btn { padding: 9px 14px; font-size: .82rem; }
+
+  .vol-form-wrap { padding: 24px 16px !important; margin: 0 0 48px; }
+
+  .perks-grid { grid-template-columns: 1fr; gap: 14px; margin-bottom: 40px; }
+  .perk-card { padding: 20px 16px; }
+
+  /* Donate */
+  .donate-stats {
+    margin: -20px auto 40px;
+    max-width: calc(100% - 32px);
+  }
+  .donate-stat { padding: 18px 10px; }
+  .donate-stat-num { font-size: 1.5rem; }
+
+  .goals-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .goal-card { padding: 20px; }
+  .goal-emoji { font-size: 1.8rem; margin-bottom: 8px; }
+  .goal-title { font-size: 1.05rem; }
+
+  .donate-form-wrap { padding: 24px 16px !important; margin: 0 0 48px; }
+
+  /* Amount buttons */
+  .amount-btns { flex-wrap: wrap; gap: 8px; }
+  .amount-btn  { flex: 1 1 calc(50% - 4px); min-width: 80px; }
+
+  /* Recent donations */
+  .recent-list { gap: 10px; }
+  .recent-item { padding: 10px 12px; }
+}
+
+@media (max-width: 480px) {
+  .skills-grid { grid-template-columns: 1fr; }
+  .skill-card { padding: 12px; }
+  .skill-desc { display: block; }
+
+  .goals-grid { grid-template-columns: 1fr; }
+
+  .amount-btn { flex: 1 1 calc(50% - 4px); }
+}
+
+/* ===== FIXES: Admin панель — мобильная адаптация ===== */
+
+@media (max-width: 768px) {
+  /* Панели доноров и волонтёров внутри admin-wrap */
+  #panelDonations,
+  #panelVolunteers {
+    padding: 0;
+  }
+
+  /* Таблица доноров/волонтёров горизонтальный скролл */
+  .tbl-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Статистика в 2 колонки */
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+
+  /* Goal cards в 1 колонку */
+  #goalsAdminList { grid-template-columns: 1fr !important; }
+
+  /* Volunteer select статуса — полная ширина */
+  #volunteersBody select.form-control { width: 100% !important; }
+
+  /* App badge */
+  #appsBadge { display: none; }
+}
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-card { padding: 12px 10px; gap: 8px; }
+  .stat-card-num { font-size: 1.25rem; }
+  .stat-card-label { font-size: .72rem; }
+
+  /* Скрыть лишние столбцы в таблицах */
+  .tbl th:nth-child(5),
+  .tbl td:nth-child(5) { display: none; }
+}
+
+/* ===== FIXES: Goal modal стили (mdialog → mbox) ===== */
+.moverlay .mbox .mbox-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+/* ===== FIXES: Разграничение типов заявок в таблице ===== */
+.app-row-adopt > td:first-child {
+  border-left: 3px solid var(--terracotta);
+}
+.app-row-surrender > td:first-child {
+  border-left: 3px solid var(--sage);
+  padding-left: 13px;
+}
+
+/* ===== FIXES: Загрузка питомцев — скелетон ===== */
+.modal-loading {
+  padding: 60px;
+  text-align: center;
+  color: var(--brown-mid);
+  font-size: 1rem;
+}
+
+/* ===== FIXES: Профиль — форма сразу видна ===== */
+@media (max-width: 480px) {
+  .profile-layout { padding: 80px 12px 40px; gap: 12px; }
+  .profile-panel { padding: 20px 14px; }
+  .panel-title { font-size: 1.1rem; }
+  .fav-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .fav-card-photo { height: 100px; font-size: 2.5rem; }
+}
+
+/* ===== FIXES: Общая мобильная адаптация таблиц ===== */
+.tbl { table-layout: fixed; }
+.tbl th, .tbl td { word-break: break-word; }
+
+@media (max-width: 600px) {
+  .tbl { font-size: .78rem; }
+  .tbl th, .tbl td { padding: 8px 6px; }
+}
+
+/* ===== FIXES: Burger меню — z-index ===== */
+.mobile-menu {
+  z-index: 998;
+}
+
+/* ===== FIXES: форма donate — адаптация суммы ===== */
+.donate-form-wrap .form-row {
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .donate-form-wrap .form-row { grid-template-columns: 1fr; }
+}

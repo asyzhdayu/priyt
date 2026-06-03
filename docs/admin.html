@@ -168,6 +168,10 @@
     letter-spacing: .05em; color: var(--brown-mid);
     margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid var(--cream-dark);
   }
+  /* Визуальное разграничение типов заявок */
+  .app-row-adopt td:first-child { border-left: 3px solid var(--terracotta); }
+  .app-row-surrender td:first-child { border-left: 3px solid var(--sage); }
+
   .app-message-block {
     background: var(--cream-dark); border-radius: var(--radius-sm);
     padding: 14px 16px; font-size: .9rem; line-height: 1.6;
@@ -306,10 +310,9 @@
       </table>
     </div></div>
   </div>
-</div>
 
-<!-- DONATIONS PANEL -->
-<div id="panelDonations" class="admin-panel">
+  <!-- DONATIONS PANEL -->
+  <div id="panelDonations" class="admin-panel">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
       <div style="font-weight:700;font-size:1.1rem">Пожертвования</div>
@@ -332,10 +335,9 @@
       <tbody id="donationsBody"><tr><td colspan="6" style="text-align:center;padding:24px;color:var(--brown-mid)">Загружаем...</td></tr></tbody>
     </table>
   </div>
-</div>
 
-<!-- VOLUNTEERS PANEL -->
-<div id="panelVolunteers" class="admin-panel">
+  <!-- VOLUNTEERS PANEL -->
+  <div id="panelVolunteers" class="admin-panel">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
       <div style="font-weight:700;font-size:1.1rem">Волонтёры</div>
@@ -357,7 +359,8 @@
       <tbody id="volunteersBody"><tr><td colspan="8" style="text-align:center;padding:24px;color:var(--brown-mid)">Загружаем...</td></tr></tbody>
     </table>
   </div>
-</div>
+  </div><!-- /panelVolunteers -->
+</div><!-- /admin-wrap -->
 
 <!-- PET MODAL -->
 <div class="moverlay" id="petModal">
@@ -514,6 +517,11 @@
   let editingPetId = null;
   let editingUserId = null;
   let petPhotoData = null;
+  let petGalleryData = [];
+
+  function renderGalleryPreviews() {
+    // stub — галерея при добавлении питомца (нет UI для нескольких фото в этой форме)
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     
@@ -643,7 +651,7 @@
     const badge = document.getElementById('appsBadge');
     if (badge) badge.textContent = `Показано: ${apps.length}`;
     tbody.innerHTML = apps.map(a => `
-      <tr>
+      <tr class="app-row-${a.type}">
         <td><span style="font-size:1.1rem">${a.type === 'adopt' ? '❤️' : '🏡'}</span> ${a.type === 'adopt' ? 'Усыновление' : 'Передача'}</td>
         <td><strong>${a.petName || '—'}</strong></td>
         <td>
@@ -678,8 +686,23 @@
     if (status === 'rejected') {
       staffComment = prompt('Причина отклонения (необязательно):') || '';
     }
+    const apps = await getApplications();
+    const app = apps.find(x => x.id === id);
     await updateApplication(id, { status, staffComment });
-    showToast(status === 'approved' ? '✅ Заявка одобрена' : '❌ Заявка отклонена', status === 'approved' ? 'success' : 'info');
+
+    if (status === 'approved' && app) {
+      if (app.type === 'adopt') {
+        showToast('✅ Усыновление одобрено — питомец зарезервирован', 'success');
+        if (app.petId) {
+          const petId = typeof app.petId === 'object' ? (app.petId._id || app.petId.id) : app.petId;
+          await updatePet(petId, { status: 'reserved' }).catch(() => {});
+        }
+      } else {
+        showToast('✅ Передача одобрена — питомец принят в приют', 'success');
+      }
+    } else if (status === 'rejected') {
+      showToast('❌ Заявка отклонена', 'info');
+    }
     loadApps(); loadStats();
   }
 
@@ -756,9 +779,12 @@
     }
 
     if (a.status === 'pending') {
+      const approveLabel = a.type === 'adopt'
+        ? '✅ Одобрить усыновление'
+        : '✅ Принять в приют';
       html += `
         <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
-          <button class="btn btn-primary" style="background:var(--success)" onclick="setAppStatus('${a.id}','approved');closeM('appModal')">✅ Одобрить</button>
+          <button class="btn btn-primary" style="background:var(--success)" onclick="setAppStatus('${a.id}','approved');closeM('appModal')">${approveLabel}</button>
           <button class="btn btn-outline" style="color:var(--error);border-color:var(--error)" onclick="setAppStatus('${a.id}','rejected');closeM('appModal')">❌ Отклонить</button>
         </div>
       `;
@@ -1115,11 +1141,9 @@
 
 <!-- GOAL MODAL -->
 <div class="moverlay" id="goalModal">
-  <div class="mdialog" style="max-width:480px">
-    <div class="mdialog-header">
-      <div class="mdialog-title" id="goalModalTitle">Новый сбор</div>
-      <button class="mdialog-close" onclick="closeM('goalModal')">✕</button>
-    </div>
+  <div class="mbox" style="max-width:480px">
+    <button class="mclose" onclick="closeM('goalModal')">✕</button>
+    <div class="mbox-title" id="goalModalTitle">Новый сбор</div>
     <div style="display:flex;gap:12px;margin-bottom:16px">
       <div class="form-group" style="flex:0 0 70px">
         <label class="form-label">Эмодзи</label>
@@ -1154,5 +1178,6 @@
     </div>
   </div>
 </div>
+
 </body>
 </html>
