@@ -10,6 +10,7 @@ const usersRouter        = require('./routes/users');
 const applicationsRouter = require('./routes/applications');
 const donationsRouter    = require('./routes/donations');
 const volunteersRouter   = require('./routes/volunteers');
+const surrenderRouter    = require('./routes/surrender');
 
 const app  = express();
 const PORT = process.env.PORT || 8080;
@@ -48,6 +49,13 @@ const authLimiter = rateLimit({
   message: { error: 'Слишком много попыток входа, попробуйте через 15 минут' },
 });
 
+// Лимит на передачу животных: 5/час с одного IP
+const surrenderLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { error: 'Слишком много заявок на передачу, попробуйте позже' },
+});
+
 // Лимит на подачу заявок: 10/час с одного IP
 const applyLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -73,6 +81,7 @@ app.use('/api/users',        usersRouter);
 app.use('/api/applications', applicationsRouter);
 app.use('/api/donations',    donationsRouter);
 app.use('/api/volunteers',   volunteersRouter);
+app.use('/api/surrender',    surrenderLimiter, surrenderRouter);
 
 // ── Health check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

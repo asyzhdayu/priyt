@@ -17,8 +17,19 @@ async function sendStatusEmail(app, petName) {
   const t = getTransporter();
   if (!t || !app.applicantEmail) return;
   const statusMap = {
-    approved:  { subject: '✅ Ваша заявка одобрена!',   emoji: '🎉', color: '#5B7B5E', text: 'Поздравляем! Ваша заявка на усыновление одобрена. Свяжитесь с нами для оформления документов.' },
-    rejected:  { subject: '❌ Заявка отклонена',         emoji: '😔', color: '#D64040', text: 'К сожалению, в этот раз мы не можем одобрить вашу заявку. Не расстраивайтесь — в нашем приюте много других замечательных питомцев!' },
+    approved:  {
+      subject: app.type === 'surrender' ? '✅ Животное принято в приют!' : '✅ Ваша заявка одобрена!',
+      emoji: '🎉', color: '#5B7B5E',
+      text: app.type === 'surrender'
+        ? 'Мы готовы принять животное. Свяжитесь с нами для уточнения времени и условий передачи.'
+        : 'Поздравляем! Ваша заявка на усыновление одобрена. Свяжитесь с нами для оформления документов.',
+    },
+    rejected:  {
+      subject: '❌ Заявка отклонена', emoji: '😔', color: '#D64040',
+      text: app.type === 'surrender'
+        ? 'К сожалению, мы не можем принять животное в данный момент. Свяжитесь с нами для обсуждения альтернатив.'
+        : 'К сожалению, в этот раз мы не можем одобрить вашу заявку. Не расстраивайтесь — в нашем приюте много других замечательных питомцев!',
+    },
     reviewing: { subject: '🔍 Заявка рассматривается',   emoji: '🔍', color: '#C4622D', text: 'Ваша заявка принята в работу. Мы свяжемся с вами в ближайшее время.' },
   };
   const info = statusMap[app.status];
@@ -57,6 +68,7 @@ async function sendStatusEmail(app, petName) {
 const Application = require('../models/Application');
 const Pet         = require('../models/Pet');
 const { auth, optionalAuth, requireStaff } = require('../middleware/auth');
+
 
 // POST /api/applications
 router.post('/', optionalAuth, async (req, res) => {
@@ -106,7 +118,8 @@ router.get('/my', auth, async (req, res) => {
   try {
     const apps = await Application.find({ userId: req.user._id })
       .populate('petId')
-      .sort({ dateSubmitted: -1 });
+      .sort({ dateSubmitted: -1 })
+      .lean();
     res.json(apps);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -116,12 +129,14 @@ router.get('/my', auth, async (req, res) => {
 // GET /api/applications (staff) — с фильтром по статусу
 router.get('/', auth, requireStaff, async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status, limit = '500' } = req.query;
     const filter = status && status !== 'all' ? { status } : {};
     const apps = await Application.find(filter)
-      .populate('petId')
+      .populate('petId', 'name species photo status')
       .populate('userId', 'name email phone')
-      .sort({ dateSubmitted: -1 });
+      .sort({ dateSubmitted: -1 })
+      .limit(parseInt(limit))
+      .lean();
     res.json(apps);
   } catch (err) {
     res.status(500).json({ error: err.message });

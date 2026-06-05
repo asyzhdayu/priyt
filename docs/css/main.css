@@ -1851,3 +1851,261 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 @media (max-width: 480px) {
   .donate-form-wrap .form-row { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   GLOBAL FIX PATCH — мобильная адаптация и визуальные баги
+   ============================================================ */
+
+/* Спиннер для модалок */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Navbar мобиль ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .navbar { padding: 0 12px; }
+  .navbar-brand { font-size: 1rem; gap: 6px; }
+  .brand-icon { width: 28px; height: 28px; font-size: .9rem; }
+  .btn-sm { padding: 6px 10px; font-size: .75rem; }
+  #navAdmin { padding: 6px 10px; font-size: .75rem; }
+}
+
+/* ── Admin панель — адаптация ────────────────────────────────── */
+.admin-wrap {
+  padding: 16px;
+}
+@media (max-width: 768px) {
+  .admin-wrap { padding: 70px 12px 40px; }
+  .admin-tabs { gap: 4px; flex-wrap: wrap; }
+  .admin-tab  { padding: 7px 10px; font-size: .78rem; flex: 1 1 auto; text-align: center; }
+  .filters    { flex-direction: column; gap: 8px; }
+  .filters .form-control { width: 100%; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card  { padding: 14px; }
+  .stat-num   { font-size: 1.6rem; }
+}
+@media (max-width: 480px) {
+  .admin-tabs { gap: 3px; }
+  .admin-tab  { padding: 6px 8px; font-size: .72rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Admin таблицы — прячем лишние колонки на мобиле ────────── */
+@media (max-width: 640px) {
+  /* Питомцы: прячем Добавлен */
+  #petsBody td:nth-child(6), #petsBody th:nth-child(6),
+  .tbl thead tr th:nth-child(6) { display: none; }
+}
+@media (max-width: 480px) {
+  /* Питомцы: прячем Возраст + Пол */
+  #petsBody td:nth-child(3), #petsBody td:nth-child(4) { display: none; }
+  /* Заявки: прячем дату */
+  #appsBody td:last-child, #appsBody th:last-child { display: none; }
+}
+
+/* ── Admin moverlay (модалки) ────────────────────────────────── */
+.moverlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 1100;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+.moverlay.open { display: flex; }
+
+.mbox {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+@media (max-width: 480px) {
+  .mbox { padding: 20px 16px; border-radius: 16px 16px 0 0; margin-top: auto; max-height: 92vh; }
+  .moverlay { align-items: flex-end; padding: 0; }
+}
+
+/* ── Goal modal (mdialog → mbox) ────────────────────────────── */
+#goalModal .mbox { max-width: 480px; }
+
+/* ── Pill buttons (фильтры заявок/волонтёров) ───────────────── */
+.pill-btn {
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: .78rem;
+  font-weight: 600;
+  border: 1.5px solid var(--cream-dark);
+  background: var(--white);
+  color: var(--brown-mid);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.pill-btn:hover  { border-color: var(--terracotta); color: var(--terracotta); }
+.pill-btn.active { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
+@media (max-width: 480px) {
+  .pill-btn { padding: 5px 9px; font-size: .72rem; }
+}
+
+/* ── Donate page — мобиль ────────────────────────────────────── */
+@media (max-width: 540px) {
+  .donate-hero { padding: 80px 16px 60px; }
+  .donate-hero h1 { font-size: 1.6rem; }
+  .donate-stats { flex-direction: column; margin: -20px 16px 40px; }
+  .donate-stat  { border-right: none; border-bottom: 1px solid var(--cream-dark); }
+  .donate-stat:last-child { border-bottom: none; }
+  .goals-grid   { grid-template-columns: 1fr; gap: 14px; }
+  .donate-form-wrap { padding: 24px 16px !important; }
+  .amount-chips { gap: 8px; }
+  .amount-chip  { padding: 8px 14px; font-size: .82rem; }
+}
+
+/* ── Volunteer page — мобиль ─────────────────────────────────── */
+.vol-hero { padding: 80px 16px 60px; }
+@media (max-width: 540px) {
+  .vol-hero h1     { font-size: 1.6rem; }
+  .vol-stats       { flex-direction: column; margin: -20px 16px 40px; }
+  .vol-stat        { border-right: none; border-bottom: 1px solid var(--cream-dark); }
+  .vol-stat:last-child { border-bottom: none; }
+  .skills-grid     { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .skill-card      { padding: 12px; gap: 8px; }
+  .skill-icon      { font-size: 1.4rem; }
+  .skill-label     { font-size: .8rem; }
+  .skill-desc      { display: none; }
+  .perks-grid      { grid-template-columns: 1fr; gap: 14px; }
+  .vol-form-wrap   { padding: 24px 16px !important; }
+  .schedule-opts   { gap: 8px; }
+  .sched-btn       { padding: 8px 14px; font-size: .82rem; }
+}
+@media (max-width: 360px) {
+  .skills-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Profile — мобиль ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+    padding: 76px 12px 40px;
+    gap: 16px;
+  }
+  .profile-sidebar { position: static; }
+  .sidebar-nav { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .sidebar-link {
+    flex: 1 1 auto;
+    text-align: center;
+    border-radius: 50px;
+    padding: 8px 12px;
+    font-size: .82rem;
+    border: 1.5px solid var(--cream-dark);
+    background: var(--white);
+  }
+  .sidebar-link.active {
+    background: var(--terracotta);
+    color: #fff;
+    border-color: var(--terracotta);
+  }
+  .profile-avatar-wrap { display: none; }
+  .profile-panel { padding: 20px 16px; }
+}
+
+/* ── Pet modal — мобиль ──────────────────────────────────────── */
+@media (max-width: 600px) {
+  .modal {
+    border-radius: 20px 20px 0 0;
+    margin-top: auto;
+    max-height: 92vh;
+  }
+  .modal-overlay.active { align-items: flex-end; }
+  .modal-pet-meta { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .modal-actions { flex-direction: column; }
+  .modal-actions .btn { width: 100%; justify-content: center; }
+  .modal-pet-photo { max-height: 220px; }
+}
+
+/* ── Index catalog — мобиль ──────────────────────────────────── */
+@media (max-width: 480px) {
+  .catalog-filters { flex-direction: column; gap: 8px; }
+  .filter-chips    { flex-wrap: wrap; gap: 6px; }
+  .filter-chip     { padding: 6px 12px; font-size: .78rem; }
+  .hero-section    { padding: 80px 16px 40px; }
+  .hero-title      { font-size: clamp(1.6rem, 7vw, 2.4rem); }
+  .hero-buttons    { flex-direction: column; }
+  .hero-buttons .btn { width: 100%; text-align: center; }
+  .hero-stats      { flex-direction: column; gap: 10px; }
+}
+
+/* ── Pet cards — мобиль ──────────────────────────────────────── */
+@media (max-width: 400px) {
+  .pets-grid { grid-template-columns: 1fr; }
+  .pet-card-actions { flex-direction: column; gap: 6px; }
+  .pet-card-actions .btn { width: 100%; }
+}
+
+/* ── Form rows — мобиль ──────────────────────────────────────── */
+@media (max-width: 540px) {
+  .form-row { grid-template-columns: 1fr !important; }
+  .vol-form-wrap [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Footer — мобиль ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+}
+@media (max-width: 400px) {
+  .footer-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Shimmer анимация (для skeleton) ─────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── App detail grid в модалке заявки ────────────────────────── */
+.app-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 480px) {
+  .app-detail-grid { grid-template-columns: 1fr; }
+}
+.app-detail-item label {
+  display: block;
+  font-size: .75rem;
+  color: var(--brown-mid);
+  margin-bottom: 2px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.app-detail-item span { font-size: .88rem; }
+.app-section-label {
+  font-size: .78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--brown-mid);
+  border-top: 1px solid var(--cream-dark);
+  padding-top: 14px;
+  margin: 14px 0 10px;
+}
+
+/* ── Volunteer skills inline form ────────────────────────────── */
+.vol-form-wrap .skills-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+@media (max-width: 400px) {
+  .vol-form-wrap .skills-grid { grid-template-columns: 1fr 1fr; }
+}

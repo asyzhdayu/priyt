@@ -112,7 +112,7 @@
     <li><a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a></li>
   </ul>
   <div class="navbar-actions">
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">🌙</button>
     <div id="navAuth" style="display:flex;gap:8px">
       <a href="login.html" class="btn btn-ghost btn-sm">Войти</a>
       <a href="login.html?tab=register" class="btn btn-primary btn-sm">Регистрация</a>
@@ -122,13 +122,14 @@
       <button class="btn btn-outline btn-sm" onclick="handleLogout()">Выйти</button>
     </div>
     <a href="admin.html" id="navAdmin" class="btn btn-sm" style="display:none;background:var(--espresso);color:#fff">⚙️ Админ</a>
-    <button class="hamburger" id="hamburger">☰</button>
+    <button class="hamburger" id="hamburger" aria-label="Открыть меню" aria-expanded="false">☰</button>
   </div>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
   <a href="index.html" class="nav-link">🏠 Главная</a>
   <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
   <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
+  <a href="about.html" class="nav-link">ℹ️ О нас</a>
   <a href="donate.html" class="nav-link">💛 Помочь</a>
   <a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a>
   <a href="profile.html" class="nav-link">👤 Мой профиль</a>
@@ -200,7 +201,7 @@
       <input type="checkbox" id="donorAnon" style="width:18px;height:18px;cursor:pointer">
       <label for="donorAnon" style="cursor:pointer;font-size:.9rem;color:var(--brown-mid)">Пожертвовать анонимно</label>
     </div>
-    <button class="btn btn-primary btn-lg" style="width:100%" onclick="submitDonation()" id="donateSubmitBtn">
+    <button class="btn btn-primary btn-lg" style="width:100%" onclick="handleDonateSubmit()" id="donateSubmitBtn">
       💛 Пожертвовать
     </button>
     <p style="font-size:.75rem;color:var(--brown-mid);text-align:center;margin-top:14px">
@@ -322,7 +323,7 @@
     else { input.value = ''; input.focus(); }
   }
 
-  async function submitDonation() {
+  async function handleDonateSubmit() {
     const amount   = parseInt(document.getElementById('donateAmount').value);
     const name     = document.getElementById('donorName').value.trim();
     const email    = document.getElementById('donorEmail').value.trim();
@@ -337,10 +338,7 @@
     btn.disabled = true; btn.textContent = 'Отправляем...';
 
     try {
-      await apiFetch('/api/donations', {
-        method: 'POST',
-        body: JSON.stringify({ donorName: name, donorEmail: email, amount, comment, anonymous: anon, goalId: selectedGoalId }),
-      });
+      await submitDonation({ donorName: name, donorEmail: email, amount, comment, anonymous: anon, goalId: selectedGoalId });
       openModal('donateSuccessModal');
       loadStats();
       loadGoals();

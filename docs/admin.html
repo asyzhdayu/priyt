@@ -22,12 +22,12 @@
     <li><a href="/priyt/#catalog" class="nav-link">Питомцы</a></li>
   </ul>
   <div class="navbar-actions">
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">🌙</button>
     <div id="navProfile" style="display:none;align-items:center;gap:10px">
       <a href="/priyt/profile" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
       <button class="btn btn-outline btn-sm" onclick="logout();location.href='/priyt/'">Выйти</button>
     </div>
-    <button class="hamburger" id="hamburger">☰</button>
+    <button class="hamburger" id="hamburger" aria-label="Открыть меню" aria-expanded="false">☰</button>
   </div>
 </nav>
 
@@ -218,7 +218,7 @@
       <div class="admin-title" id="adminTitle">⚙️ Панель управления</div>
       <div class="admin-subtitle" id="adminSubtitle">Загрузка...</div>
     </div>
-    <button class="btn btn-primary" onclick="openPetModal()">+ Добавить питомца</button>
+    <button class="btn btn-primary" onclick="openPetForm()">+ Добавить питомца</button>
   </div>
 
   <div class="stats-row" id="adminStats"></div>
@@ -270,15 +270,6 @@
       <button class="pill-btn"        data-status-btn="rejected" onclick="setAppStatusFilter('rejected',this)" >❌ Отклонены</button>
       <span id="appsBadge" style="margin-left:auto;font-size:.82rem;color:var(--brown-mid)"></span>
     </div>
-    <style>
-      .pill-btn {
-        padding: 6px 14px; border-radius: 50px; font-size: .8rem; font-weight: 600;
-        border: 1.5px solid var(--cream-dark); background: var(--white); color: var(--brown-mid);
-        cursor: pointer; transition: var(--transition);
-      }
-      .pill-btn:hover  { border-color: var(--terracotta); color: var(--terracotta); }
-      .pill-btn.active { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
-    </style>
     <!-- Hidden selects for JS compatibility -->
     <div style="display:none">
       <select id="appTypeF"><option value="all">all</option><option value="adopt">adopt</option><option value="surrender">surrender</option></select>
@@ -445,6 +436,12 @@
       </div>
       <div id="pfPhotoPreview"></div>
     </div>
+    <div class="form-group">
+      <label class="form-label">Дополнительные фото <span style="font-size:.75rem;color:var(--brown-mid)">(до 6 штук)</span></label>
+      <div id="pfGalleryPreview"></div>
+      <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="document.getElementById('pfGalleryInput').click()" id="pfGalleryBtn">+ Добавить фото галереи</button>
+      <input type="file" id="pfGalleryInput" accept="image/*" style="display:none" onchange="addGalleryPhoto(this)">
+    </div>
     <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:8px">
       <label class="form-check"><input type="checkbox" id="pfVacc"><span>Вакцинирован</span></label>
       <label class="form-check"><input type="checkbox" id="pfSter"><span>Стерилизован</span></label>
@@ -520,7 +517,37 @@
   let petGalleryData = [];
 
   function renderGalleryPreviews() {
-    // stub — галерея при добавлении питомца (нет UI для нескольких фото в этой форме)
+    const container = document.getElementById('pfGalleryPreview');
+    if (!container) return;
+    if (!petGalleryData.length) { container.innerHTML = ''; return; }
+    container.innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+        ${petGalleryData.map((src, i) => `
+          <div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;flex-shrink:0">
+            <img src="${src}" style="width:100%;height:100%;object-fit:cover">
+            <button onclick="removeGalleryPhoto(${i})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+          </div>`).join('')}
+        ${petGalleryData.length < 6 ? `
+          <label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--cream-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:.7rem;color:var(--brown-mid);gap:4px;flex-shrink:0">
+            <span style="font-size:1.2rem">+</span>Ещё
+            <input type="file" accept="image/*" style="display:none" onchange="addGalleryPhoto(this)">
+          </label>` : ''}
+      </div>`;
+  }
+
+  function addGalleryPhoto(input) {
+    const file = input.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    if (petGalleryData.length >= 6) { showToast('Максимум 6 фото', 'warning'); return; }
+    const reader = new FileReader();
+    reader.onload = e => { petGalleryData.push(e.target.result); renderGalleryPreviews(); };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  function removeGalleryPhoto(idx) {
+    petGalleryData.splice(idx, 1);
+    renderGalleryPreviews();
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -584,6 +611,7 @@
   async function loadPets() {
     const q  = (document.getElementById('petQ').value || '').toLowerCase();
     const sf = document.getElementById('petStatusF').value;
+    // limit:0 = загрузить все питомцы без пагинации
     let pets = await getPets();
     if (q)          pets = pets.filter(p => p.name.toLowerCase().includes(q) || p.breed.toLowerCase().includes(q));
     if (sf !== 'all') pets = pets.filter(p => p.status === sf);
@@ -635,9 +663,10 @@
   async function loadApps() {
     const tf = document.getElementById('appTypeF').value;
     const sf = document.getElementById('appStatusF').value;
-    let apps = await getApplications();
+    // Передаём статус на сервер для фильтрации (не грузим лишнее)
+    let apps = await getApplications(sf);
+    // Статус уже отфильтрован на сервере; тип фильтруем на клиенте
     if (tf !== 'all') apps = apps.filter(a => a.type === tf);
-    if (sf !== 'all') apps = apps.filter(a => a.status === sf);
 
     const sLabel = { pending: 'На рассмотрении', approved: 'Одобрена', rejected: 'Отклонена' };
     const hLabel = { apartment: 'Квартира', house: 'Дом', room: 'Комната' };
@@ -778,14 +807,22 @@
       `;
     }
 
-    if (a.status === 'pending') {
-      const approveLabel = a.type === 'adopt'
-        ? '✅ Одобрить усыновление'
-        : '✅ Принять в приют';
+    if (a.status === 'pending' || a.status === 'reviewing') {
+      const isAdopt = a.type === 'adopt';
+      const approveColor = isAdopt ? 'var(--terracotta)' : 'var(--sage)';
+      const approveLabel = isAdopt ? '🏠 Одобрить усыновление' : '🏡 Принять животное в приют';
       html += `
-        <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
-          <button class="btn btn-primary" style="background:var(--success)" onclick="setAppStatus('${a.id}','approved');closeM('appModal')">${approveLabel}</button>
-          <button class="btn btn-outline" style="color:var(--error);border-color:var(--error)" onclick="setAppStatus('${a.id}','rejected');closeM('appModal')">❌ Отклонить</button>
+        <div style="border-top:2px solid var(--cream-dark);margin-top:20px;padding-top:16px">
+          <div style="font-size:.82rem;margin-bottom:12px;font-weight:600;padding:8px 12px;border-radius:8px;background:${isAdopt?'rgba(196,98,45,.08)':'rgba(91,123,94,.08)'}">
+            ${isAdopt
+              ? '❤️&nbsp; Усыновление — питомец переедет в новый дом'
+              : '🏡&nbsp; Передача — животное принимается в приют'}
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-sm" style="background:${approveColor};color:#fff;border:none;padding:10px 20px;font-weight:700;border-radius:8px" onclick="setAppStatus('${a.id}','approved');closeM('appModal')">${approveLabel}</button>
+            ${a.status !== 'reviewing' ? `<button class="btn btn-ghost btn-sm" onclick="setAppStatus('${a.id}','reviewing');closeM('appModal')">🔍 Взять в работу</button>` : ''}
+            <button class="btn btn-sm" style="background:rgba(214,64,64,.1);color:var(--error);border:1.5px solid var(--error);border-radius:8px" onclick="setAppStatus('${a.id}','rejected');closeM('appModal')">❌ Отклонить</button>
+          </div>
         </div>
       `;
     }
@@ -820,7 +857,7 @@
   }
 
   // ── Pet modal ─────────────────────────────────────────────
-  function openPetModal() {
+  function openPetForm() {
     editingPetId = null; petPhotoData = null;
     document.getElementById('petModalTitle').textContent = 'Добавить питомца';
     document.getElementById('petFormErr').style.display = 'none';

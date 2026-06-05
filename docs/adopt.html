@@ -29,11 +29,12 @@
     <li><a href="index.html" class="nav-link">Главная</a></li>
     <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
     <li><a href="adopt.html" class="nav-link active">Взять животное</a></li>
+    <li><a href="about.html" class="nav-link">О нас</a></li>
     <li><a href="donate.html" class="nav-link">💛 Помочь</a></li>
     <li><a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a></li>
   </ul>
   <div class="navbar-actions">
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">🌙</button>
     <div id="navAuth" style="display:flex;gap:8px">
       <a href="/priyt/login" class="btn btn-ghost btn-sm">Войти</a>
     </div>
@@ -41,7 +42,7 @@
       <a href="/priyt/profile" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
       <button class="btn btn-outline btn-sm" onclick="logout();location.href='/priyt/'">Выйти</button>
     </div>
-    <button class="hamburger" id="hamburger">☰</button>
+    <button class="hamburger" id="hamburger" aria-label="Открыть меню" aria-expanded="false">☰</button>
   </div>
 </nav>
 
@@ -49,6 +50,7 @@
   <a href="index.html" class="nav-link">🏠 Главная</a>
   <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
   <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
+  <a href="about.html" class="nav-link">ℹ️ О нас</a>
   <a href="donate.html" class="nav-link">💛 Помочь</a>
   <a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a>
   <a href="profile.html" class="nav-link">👤 Мой профиль</a>
@@ -425,10 +427,12 @@
       return;
     }
 
-    const pet = await getPetById(selectedPetId);
+    let pet = null;
+    try { pet = await getPetById(selectedPetId); } catch (_) {}
 
     try {
       await addApplication({
+        type: 'adopt',
         petId: selectedPetId,
         petName: pet?.name || 'Не указан',
         applicantName: document.getElementById('aName').value.trim(),

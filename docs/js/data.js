@@ -85,9 +85,8 @@ async function filterPets({
   if (status  !== 'all') params.set('status',  status);
   if (gender  !== 'all') params.set('gender',  gender);
   if (size    !== 'all') params.set('size',    size);
-  params.set('sort',  sort);
-  params.set('page',  page);
-  params.set('limit', limit);
+  params.set('sort', sort);
+  if (limit > 0) { params.set('page', page); params.set('limit', limit); }
   return apiFetch('/api/pets?' + params.toString());
 }
 
@@ -156,25 +155,39 @@ async function getFavorites() {
   return apiFetch('/api/users/me/favorites');
 }
 
-// FIX #4: toggleFavorite теперь тоже инвалидирует кеш favorites
+// toggleFavorite — переключает избранное и сбрасывает кеш
 async function toggleFavorite(petId) {
   const data = await apiMutate('/api/users/me/favorites/' + petId, { method: 'POST' });
   cacheClear('/api/users/me/favorites');
+  _favsCache = null; // сброс локального кеша isFavorite
   return data.added;
 }
 
-// FIX #5: isFavorite ASYNC — был sync, теперь правильно работает в renderPetCard
+// isFavorite — батч-кеш на один цикл рендеринга (1 запрос на N карточек)
+let _favsCache = null;
+let _favsCacheTs = 0;
 async function isFavorite(petId) {
-  const favs = await getFavorites();
-  return favs.some(p => (p.id || p._id?.toString()) === petId);
+  if (!_favsCache || Date.now() - _favsCacheTs > 5000) {
+    _favsCache = await getFavorites().catch(() => []);
+    _favsCacheTs = Date.now();
+  }
+  return _favsCache.some(p => (p.id || p._id?.toString()) === petId);
 }
 
 // ── Заявки ────────────────────────────────────────────────────────────────────
 async function addApplication(appData) {
   return apiMutate('/api/applications', { method: 'POST', body: JSON.stringify(appData) });
 }
+
+// Публичная передача животного (не требует роли staff)
+async function submitSurrenderForm(data) {
+  return apiMutate('/api/surrender', { method: 'POST', body: JSON.stringify(data) });
+}
 async function getUserApplications() { return apiFetch('/api/applications/my'); }
-async function getApplications() { return apiFetch('/api/applications'); }
+async function getApplications(status = 'all') {
+  const q = status && status !== 'all' ? '?status=' + status : '';
+  return apiFetch('/api/applications' + q);
+}
 async function updateApplication(id, updates) {
   return apiMutate('/api/applications/' + id + '/status', {
     method: 'PUT', body: JSON.stringify(updates),
@@ -227,14 +240,14 @@ function generatePetPlaceholderBg(species) {
 // ── Пожертвования ─────────────────────────────────────────────────────────────
 async function getDonationGoals()       { return apiFetch('/api/donations/goals'); }
 async function getDonationStats()       { return apiFetch('/api/donations/stats'); }
-async function submitDonation(data)     { return apiFetch('/api/donations', { method: 'POST', body: JSON.stringify(data) }); }
+async function submitDonation(data)     { return apiMutate('/api/donations', { method: 'POST', body: JSON.stringify(data) }); }
 async function getDonations()           { return apiFetch('/api/donations'); }
 async function createDonationGoal(data) { return apiMutate('/api/donations/goals', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateDonationGoal(id, data) { return apiMutate('/api/donations/goals/' + id, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteDonationGoal(id)   { return apiMutate('/api/donations/goals/' + id, { method: 'DELETE' }); }
 
 // ── Волонтёры ──────────────────────────────────────────────────────────────────
-async function submitVolunteer(data)    { return apiFetch('/api/volunteers', { method: 'POST', body: JSON.stringify(data) }); }
+async function submitVolunteer(data)    { return apiMutate('/api/volunteers', { method: 'POST', body: JSON.stringify(data) }); }
 async function getVolunteers(status)    {
   const q = status && status !== 'all' ? '?status=' + status : '';
   return apiFetch('/api/volunteers' + q);

@@ -22,7 +22,9 @@ router.post('/register', async (req, res) => {
     await user.save();
 
     const token = signToken(user._id);
-    res.status(201).json({ token, user });
+    const safeUser = user.toObject();
+    delete safeUser.password;
+    res.status(201).json({ token, user: safeUser });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -41,7 +43,9 @@ router.post('/login', async (req, res) => {
     if (!ok) return res.status(401).json({ error: 'Неверный email или пароль' });
 
     const token = signToken(user._id);
-    res.json({ token, user });
+    const safeUser = user.toObject();
+    delete safeUser.password;
+    res.json({ token, user: safeUser });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -88,7 +92,7 @@ router.put('/me', auth, async (req, res) => {
 // GET /api/users/me/favorites
 router.get('/me/favorites', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('favorites');
+    const user = await User.findById(req.user._id).populate('favorites').lean();
     res.json(user.favorites);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -119,7 +123,7 @@ router.post('/me/favorites/:petId', auth, async (req, res) => {
 // GET /api/users — все пользователи (admin)
 router.get('/', auth, requireAdmin, async (req, res) => {
   try {
-    const users = await User.find().select('-password').sort({ dateRegistered: -1 });
+    const users = await User.find().select('-password').sort({ dateRegistered: -1 }).lean();
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -29,11 +29,12 @@
     <li><a href="index.html" class="nav-link">Главная</a></li>
     <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
     <li><a href="adopt.html" class="nav-link">Взять животное</a></li>
+    <li><a href="about.html" class="nav-link">О нас</a></li>
     <li><a href="donate.html" class="nav-link">💛 Помочь</a></li>
     <li><a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a></li>
   </ul>
   <div class="navbar-actions">
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">🌙</button>
     <div id="navAuth" style="display:flex;gap:8px">
       <a href="/priyt/login" class="btn btn-ghost btn-sm">Войти</a>
     </div>
@@ -42,7 +43,7 @@
       <button class="btn btn-outline btn-sm" onclick="handleLogout()">Выйти</button>
     </div>
     <a href="/priyt/admin" id="navAdmin" class="btn btn-sm" style="display:none;background:var(--espresso);color:#fff">⚙️ Админ</a>
-    <button class="hamburger" id="hamburger">☰</button>
+    <button class="hamburger" id="hamburger" aria-label="Открыть меню" aria-expanded="false">☰</button>
   </div>
 </nav>
 
@@ -50,6 +51,7 @@
   <a href="index.html" class="nav-link">🏠 Главная</a>
   <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
   <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
+  <a href="about.html" class="nav-link">ℹ️ О нас</a>
   <a href="donate.html" class="nav-link">💛 Помочь</a>
   <a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a>
   <a href="profile.html" class="nav-link">👤 Мой профиль</a>
@@ -175,8 +177,8 @@
 
     <nav class="sidebar-nav">
       <button class="sidebar-link active" onclick="showTab('info', this)">👤 Мои данные</button>
-      <button class="sidebar-link" onclick="showTab('apps', this)">📋 Мои заявки</button>
-      <button class="sidebar-link" onclick="showTab('favs', this)" id="favsTabBtn">❤️ Избранное</button>
+      <button class="sidebar-link" onclick="showTabAndScroll('apps', this)">📋 Мои заявки <span id="appsCountBadge" style="background:var(--terracotta);color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:99px;display:none"></span></button>
+      <button class="sidebar-link" onclick="showTabAndScroll('favs', this)" id="favsTabBtn">❤️ Избранное <span id="favsCountBadge" style="background:var(--terracotta);color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:99px;display:none"></span></button>
       <hr style="border:none;border-top:1px solid var(--cream-dark);margin:8px 0">
       <button class="sidebar-link" style="color:var(--error)" onclick="handleLogout()">🚪 Выйти</button>
     </nav>
@@ -234,11 +236,17 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="pPwdOld">Текущий пароль</label>
-            <input type="password" class="form-control" id="pPwdOld" placeholder="••••••••">
+            <div style="position:relative">
+              <input type="password" class="form-control" id="pPwdOld" placeholder="••••••••" style="padding-right:44px">
+              <button type="button" onclick="togglePwd('pPwdOld',this)" aria-label="Показать пароль" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--brown-mid)">👁</button>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label" for="pPwdNew">Новый пароль</label>
-            <input type="password" class="form-control" id="pPwdNew" placeholder="Минимум 6 символов">
+            <div style="position:relative">
+              <input type="password" class="form-control" id="pPwdNew" placeholder="Минимум 6 символов" style="padding-right:44px">
+              <button type="button" onclick="togglePwd('pPwdNew',this)" aria-label="Показать новый пароль" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--brown-mid)">👁</button>
+            </div>
           </div>
         </div>
       </div>
@@ -300,9 +308,23 @@
     const pOtherPets = document.getElementById('pOtherPets');
     if (pOtherPets) pOtherPets.checked = currentUser.hasOtherPets || false;
 
+    // Activate default tab and mark sidebar link active
+    const defaultLink = document.querySelector('[onclick*="Info"]');
+    if (defaultLink) defaultLink.classList.add('active');
+
     // Check hash
     if (window.location.hash === '#favorites') showTab('favs', document.querySelector('[onclick*="favs"]'));
-    if (window.location.hash === '#apps') showTab('apps', document.querySelector('[onclick*="apps"]'));
+    else if (window.location.hash === '#apps')  showTab('apps', document.querySelector('[onclick*="apps"]'));
+
+    // Pre-load counts for badges
+    getUserApplications().then(apps => {
+      const badge = document.getElementById('appsCountBadge');
+      if (badge && apps.length) badge.textContent = apps.length;
+    }).catch(() => {});
+    getFavorites().then(favs => {
+      const badge = document.getElementById('favsCountBadge');
+      if (badge && favs.length) badge.textContent = favs.length;
+    }).catch(() => {});
   });
 
   function showTab(tab, btn) {
@@ -310,12 +332,17 @@
       document.getElementById('tab' + t).style.display = 'none';
     });
     document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-
     document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
-    btn.classList.add('active');
-
+    if (btn) btn.classList.add('active');
     if (tab === 'apps') loadApps();
     if (tab === 'favs') loadFavs();
+  }
+
+  // Show tab on sidebar click (mobile - scroll to content)
+  function showTabAndScroll(tab, btn) {
+    showTab(tab, btn);
+    const panel = document.querySelector('.profile-main');
+    if (panel && window.innerWidth < 768) panel.scrollIntoView({ behavior: 'smooth' });
   }
 
   async function loadApps() {
@@ -421,7 +448,13 @@
         housingType: document.getElementById('pHousing').value,
         hasOtherPets: document.getElementById('pOtherPets').checked,
       };
-      if (pwdOld && pwdNew) { updates.passwordOld = pwdOld; updates.passwordNew = pwdNew; }
+      if (pwdOld || pwdNew) {
+        if (!pwdOld) { showToast('Введите текущий пароль', 'error'); return; }
+        if (!pwdNew || pwdNew.length < 6) { showToast('Новый пароль — минимум 6 символов', 'error'); return; }
+        if (pwdOld === pwdNew) { showToast('Новый пароль совпадает со старым', 'error'); return; }
+        updates.passwordOld = pwdOld;
+        updates.passwordNew = pwdNew;
+      }
       const updated = await updateProfile(updates);
       currentUser = updated;
 
@@ -439,6 +472,14 @@
       msgEl.style.color = 'var(--error)';
       msgEl.style.display = 'block';
     }
+  }
+
+  function togglePwd(id, btn) {
+    const input = document.getElementById(id);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁';
   }
 
   function handleLogout() {

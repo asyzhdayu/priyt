@@ -1,3 +1,12 @@
+// ── Глобальный обработчик необработанных Promise-ошибок ──────────────────────
+window.addEventListener('unhandledrejection', e => {
+  const msg = e.reason?.message || String(e.reason) || 'Неизвестная ошибка';
+  // Не показываем тост для 401 — там уже есть авто-logout
+  if (msg.includes('Unauthorized') || msg.includes('401')) return;
+  console.error('[unhandledrejection]', e.reason);
+  if (typeof showToast === 'function') showToast('Что-то пошло не так. Попробуйте ещё раз.', 'error');
+});
+
 // ── Тема ──────────────────────────────────────────────────────────────────────
 function initTheme() {
   const saved = localStorage.getItem('shelter_theme') || 'light';
@@ -42,7 +51,8 @@ function openModal(id) {
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
   activeModal = id;
-  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(id); });
+  // { once: true } — слушатель удаляется сам после первого срабатывания
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(id); }, { once: true });
 }
 function closeModal(id) {
   const overlay = document.getElementById(id);
@@ -214,7 +224,7 @@ async function renderPetCard(pet, showAdminActions = false) {
       <div class="pet-photo-wrap">
         ${photoHtml}
         <span class="pet-status-badge status-${pet.status}">${getStatusLabel(pet.status)}</span>
-        <button class="pet-fav-btn ${fav ? 'active' : ''}" onclick="handleFavorite('${pet.id}', this)" title="${fav ? 'Убрать из избранного' : 'В избранное'}">
+        <button class="pet-fav-btn ${fav ? 'active' : ''}" onclick="handleFavorite('${pet.id}', this)" aria-label="${fav ? 'Убрать из избранного' : 'В избранное'}" title="${fav ? 'Убрать из избранного' : 'В избранное'}">
           ${fav ? '❤️' : '🤍'}
         </button>
       </div>
@@ -237,7 +247,12 @@ async function openPetModal(petId) {
   if (!modal) return;
 
   // Показываем скелетон пока грузим питомца
-  modal.innerHTML = `<div class="modal"><div class="modal-loading">Загрузка...</div></div>`;
+  modal.innerHTML = `<div class="modal" style="min-height:300px;display:flex;align-items:center;justify-content:center">
+    <div style="text-align:center;padding:40px">
+      <div style="width:48px;height:48px;border:4px solid var(--cream-dark);border-top-color:var(--terracotta);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px"></div>
+      <div style="color:var(--brown-mid);font-size:.9rem">Загружаем питомца...</div>
+    </div>
+  </div>`;
   openModal('petModal');
 
   let pet;
@@ -252,7 +267,7 @@ async function openPetModal(petId) {
 
   modal.innerHTML = `
     <div class="modal">
-      <button class="modal-close" onclick="closeModal('petModal')">✕</button>
+      <button class="modal-close" onclick="closeModal('petModal')" aria-label="Закрыть">✕</button>
       ${renderPhotoGallery(pet)}
       <div class="modal-body">
         <div class="modal-pet-header">
@@ -365,9 +380,8 @@ function initSearchAutocomplete(inputId, onSelect) {
       const results = await searchSuggest(q).catch(() => []);
       if (!results.length) { box.style.display = 'none'; return; }
       box.innerHTML = results.map(p => `
-        <div class="autocomplete-item" data-id="${p.id}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--cream-dark);transition:background .15s"
-          onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''"
-          onclick="handleAutocompleteSelect('${p.id}', '${p.name.replace(/'/g,"\\'")}')">
+        <div class="autocomplete-item" data-ac-id="${p.id}" data-ac-name="${p.name.replace(/"/g,'&quot;')}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--cream-dark);transition:background .15s"
+          onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
           ${p.photo
             ? `<img src="${p.photo}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0">`
             : `<div style="width:36px;height:36px;border-radius:8px;background:${generatePetPlaceholderBg(p.species)};display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">${getSpeciesEmoji(p.species)}</div>`}
@@ -383,16 +397,22 @@ function initSearchAutocomplete(inputId, onSelect) {
   document.addEventListener('click', e => { if (!input.parentElement.contains(e.target)) box.style.display = 'none'; });
   input.addEventListener('keydown', e => { if (e.key === 'Escape') box.style.display = 'none'; });
 
-  window._autocompleteBox = box;
-  window._handleAutocompleteSelect = (id, name) => {
-    input.value = name;
+  // Делегированный обработчик — клик по любому item в box
+  box.addEventListener('click', e => {
+    const item = e.target.closest('[data-ac-id]');
+    if (!item) return;
+    input.value = item.dataset.acName;
     box.style.display = 'none';
-    if (onSelect) onSelect(id, name);
-  };
+    if (onSelect) onSelect(item.dataset.acId, item.dataset.acName);
+  });
 }
 
 function handleAutocompleteSelect(id, name) {
-  if (window._handleAutocompleteSelect) window._handleAutocompleteSelect(id, name);
+  // Оставлено для обратной совместимости с inline onclick
+  const box = document.querySelector('.autocomplete-box');
+  const input = box?.previousElementSibling;
+  if (input) input.value = name;
+  if (box) box.style.display = 'none';
 }
 
 // ── Галерея фотографий в модалке питомца ──────────────────────────────────────
@@ -411,8 +431,8 @@ function renderPhotoGallery(pet) {
         ${allPhotos.map((src, i) => `<img src="${src}" alt="${pet.name} фото ${i+1}" style="width:100%;flex-shrink:0;max-height:320px;object-fit:cover">`).join('')}
       </div>
       ${allPhotos.length > 1 ? `
-      <button onclick="galleryPrev('${id}')" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center">‹</button>
-      <button onclick="galleryNext('${id}',${allPhotos.length})" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center">›</button>
+      <button onclick="galleryPrev('${id}')" aria-label="Предыдущее фото" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center">‹</button>
+      <button onclick="galleryNext('${id}',${allPhotos.length})" aria-label="Следующее фото" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center">›</button>
       <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px" id="${id}_dots">
         ${allPhotos.map((_, i) => `<div onclick="galleryGoTo('${id}',${i},${allPhotos.length})" style="width:8px;height:8px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.5)'};cursor:pointer;transition:.2s" id="${id}_dot_${i}"></div>`).join('')}
       </div>` : ''}

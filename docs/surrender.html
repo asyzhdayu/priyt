@@ -29,11 +29,12 @@
     <li><a href="index.html" class="nav-link">Главная</a></li>
     <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
     <li><a href="adopt.html" class="nav-link">Взять животное</a></li>
+    <li><a href="about.html" class="nav-link">О нас</a></li>
     <li><a href="donate.html" class="nav-link">💛 Помочь</a></li>
     <li><a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a></li>
   </ul>
   <div class="navbar-actions">
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">🌙</button>
     <div id="navAuth" style="display:flex;gap:8px">
       <a href="login.html" class="btn btn-ghost btn-sm">Войти</a>
       <a href="login.html?tab=register" class="btn btn-primary btn-sm">Регистрация</a>
@@ -42,7 +43,7 @@
       <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
       <button class="btn btn-outline btn-sm" onclick="logout();location.href='/priyt/'">Выйти</button>
     </div>
-    <button class="hamburger" id="hamburger">☰</button>
+    <button class="hamburger" id="hamburger" aria-label="Открыть меню" aria-expanded="false">☰</button>
   </div>
 </nav>
 
@@ -50,6 +51,7 @@
   <a href="index.html" class="nav-link">🏠 Главная</a>
   <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
   <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
+  <a href="about.html" class="nav-link">ℹ️ О нас</a>
   <a href="donate.html" class="nav-link">💛 Помочь</a>
   <a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a>
   <a href="profile.html" class="nav-link">👤 Мой профиль</a>
@@ -284,6 +286,7 @@
           <li><a href="index.html#catalog">Питомцы</a></li>
           <li><a href="adopt.html">Взять животное</a></li>
           <li><a href="surrender.html">Отдать животное</a></li>
+          <li><a href="about.html">О нас</a></li>
           <li><a href="donate.html">💛 Помочь</a></li>
           <li><a href="volunteer.html">🤝 Волонтёрство</a></li>
         </ul>
@@ -343,41 +346,36 @@
       return;
     }
 
-    const user = getCurrentUser();
+    const submitBtn = document.getElementById('surrenderSubmitBtn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Отправляем...'; }
 
-    // Save pet to catalog
-    const newPet = await addPet({
-      name,
-      species,
-      breed: document.getElementById('sBreed').value.trim() || 'Беспородный',
-      age: parseInt(age),
-      ageUnit: document.getElementById('sAgeUnit').value,
-      gender,
-      size: document.getElementById('sSize').value,
-      color: document.getElementById('sColor').value.trim() || 'Неизвестно',
-      description,
-      vaccinated: document.getElementById('sVaccinated').checked,
-      sterilized: document.getElementById('sSterilized').checked,
-      photo: surrenderPhotoData || null,
-      status: 'available'
-    });
+    try {
+      // Единый публичный эндпоинт — не требует роли staff
+      await submitSurrenderForm({
+        name, species, gender,
+        breed:       document.getElementById('sBreed').value.trim() || 'Беспородный',
+        age:         parseInt(age),
+        ageUnit:     document.getElementById('sAgeUnit').value,
+        size:        document.getElementById('sSize').value,
+        color:       document.getElementById('sColor').value.trim() || 'Неизвестно',
+        description,
+        vaccinated:  document.getElementById('sVaccinated').checked,
+        sterilized:  document.getElementById('sSterilized').checked,
+        photo:       surrenderPhotoData || null,
+        ownerName, ownerEmail, ownerPhone,
+        reason:      document.getElementById('sReason').value,
+        notifyOnAdopt: document.getElementById('sNotify').checked,
+      });
 
-    // Save application
-    await addApplication({
-      type: 'surrender',
-      userId: user?.id || null,
-      petId: newPet.id || newPet._id,
-      petName: name,
-      applicantName: ownerName,
-      applicantEmail: ownerEmail,
-      applicantPhone: ownerPhone,
-      message: document.getElementById('sReason').value,
-      notifyOnAdopt: document.getElementById('sNotify').checked
-    });
-
-    document.getElementById('surrenderForm').style.display = 'none';
-    document.getElementById('surrenderSuccess').style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('surrenderForm').style.display = 'none';
+      document.getElementById('surrenderSuccess').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      errorEl.textContent = e.message || 'Ошибка при отправке. Попробуй ещё раз.';
+      errorEl.style.display = 'block';
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Отдать в приют 🐾'; }
+    }
   }
 </script>
 </body>

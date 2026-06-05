@@ -1,6 +1,7 @@
-const express = require('express');
-const router  = express.Router();
-const Pet     = require('../models/Pet');
+const express     = require('express');
+const router      = express.Router();
+const Pet         = require('../models/Pet');
+const Application = require('../models/Application');
 const { auth, requireStaff } = require('../middleware/auth');
 
 // GET /api/pets — список с фильтрами + ПАГИНАЦИЯ
@@ -36,12 +37,12 @@ router.get('/', async (req, res) => {
     if (limitNum > 0) {
       const skip  = (pageNum - 1) * limitNum;
       const total = await Pet.countDocuments(filter);
-      const pets  = await query.skip(skip).limit(limitNum);
+      const pets  = await query.skip(skip).limit(limitNum).lean();
       return res.json({ pets, total, page: pageNum, pages: Math.ceil(total / limitNum) });
     }
 
     // Без пагинации — старое поведение (массив)
-    const pets = await query;
+    const pets = await query.lean();
     res.json(pets);
 
   } catch (err) {
@@ -57,7 +58,7 @@ router.get('/suggest', async (req, res) => {
     const pets = await Pet.find({
       name: { $regex: q, $options: 'i' },
       status: { $ne: 'adopted' },
-    }).limit(6).select('name species breed photo');
+    }).limit(6).select('name species breed photo').lean();
     res.json(pets);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -71,7 +72,7 @@ router.get('/stats', async (req, res) => {
       Pet.countDocuments(),
       Pet.countDocuments({ status: 'available' }),
       Pet.countDocuments({ status: 'adopted' }),
-      require('../models/Application').countDocuments(),
+      Application.countDocuments(),
     ]);
     res.json({ total, available, adopted, applications });
   } catch (err) {
@@ -82,7 +83,7 @@ router.get('/stats', async (req, res) => {
 // GET /api/pets/:id
 router.get('/:id', async (req, res) => {
   try {
-    const pet = await Pet.findById(req.params.id);
+    const pet = await Pet.findById(req.params.id).lean();
     if (!pet) return res.status(404).json({ error: 'Питомец не найден' });
     res.json(pet);
   } catch (err) {
