@@ -8,6 +8,12 @@ const Pet         = require('../models/Pet');
 const Application = require('../models/Application');
 const { optionalAuth } = require('../middleware/auth');
 
+// Простая проверка формата email
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
+
 router.post('/', optionalAuth, async (req, res) => {
   try {
     const {
@@ -22,6 +28,9 @@ router.post('/', optionalAuth, async (req, res) => {
     // Валидация обязательных полей
     if (!name || !species || !age || !gender || !ownerName || !ownerEmail || !ownerPhone) {
       return res.status(400).json({ error: 'Заполните все обязательные поля' });
+    }
+    if (!isValidEmail(ownerEmail)) {
+      return res.status(400).json({ error: 'Некорректный email владельца' });
     }
 
     // Создаём питомца со статусом available

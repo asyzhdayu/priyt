@@ -3,11 +3,18 @@ const router    = express.Router();
 const Volunteer = require('../models/Volunteer');
 const { auth, requireStaff } = require('../middleware/auth');
 
+// Простая проверка формата email
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
+
 // POST /api/volunteers — подать заявку (публичный)
 router.post('/', async (req, res) => {
   try {
     const { name, email, phone } = req.body;
     if (!name || !email || !phone) return res.status(400).json({ error: 'Заполните обязательные поля' });
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Некорректный email' });
     const existing = await Volunteer.findOne({ email: email.toLowerCase() });
     if (existing) return res.status(409).json({ error: 'Вы уже оставляли заявку на волонтёрство' });
     const vol = new Volunteer(req.body);
@@ -21,7 +28,7 @@ router.get('/', auth, requireStaff, async (req, res) => {
   try {
     const { status } = req.query;
     const filter = status && status !== 'all' ? { status } : {};
-    const vols = await Volunteer.find(filter).sort({ date: -1 });
+    const vols = await Volunteer.find(filter).sort({ date: -1 }).lean();
     res.json(vols);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

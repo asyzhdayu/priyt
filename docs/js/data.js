@@ -52,7 +52,7 @@ async function apiFetch(path, options = {}) {
     localStorage.removeItem('shelter_current_user');
     cacheClear();
     showToast('Сессия истекла — войдите снова', 'warning');
-    setTimeout(() => { window.location.href = '/priyt/login'; }, 1500);
+    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
     throw new Error('Unauthorized');
   }
 
@@ -181,7 +181,12 @@ async function addApplication(appData) {
 
 // Публичная передача животного (не требует роли staff)
 async function submitSurrenderForm(data) {
-  return apiMutate('/api/surrender', { method: 'POST', body: JSON.stringify(data) });
+  const result = await apiFetch('/api/surrender', { method: 'POST', body: JSON.stringify(data) });
+  // Сбрасываем кеш питомцев и заявок — surrender создаёт оба объекта
+  cacheClear('/api/pets');
+  cacheClear('/api/applications');
+  cacheClear('/api/surrender');
+  return result;
 }
 async function getUserApplications() { return apiFetch('/api/applications/my'); }
 async function getApplications(status = 'all') {

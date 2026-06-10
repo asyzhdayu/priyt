@@ -1670,11 +1670,6 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 }
 
 /* Server banner spin */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
 /* Fav badge */
 #favBadge { display: none; }
 
@@ -1856,11 +1851,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
    GLOBAL FIX PATCH — мобильная адаптация и визуальные баги
    ============================================================ */
 
-/* Спиннер для модалок */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
+/* Спиннер для модалок — @keyframes spin определён выше */
 
 /* ── Navbar мобиль ───────────────────────────────────────────── */
 @media (max-width: 480px) {
@@ -2065,11 +2056,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
   .footer-grid { grid-template-columns: 1fr; }
 }
 
-/* ── Shimmer анимация (для skeleton) ─────────────────────────── */
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+/* ── Shimmer — @keyframes shimmer определён выше ─────────────── */
 
 /* ── App detail grid в модалке заявки ────────────────────────── */
 .app-detail-grid {

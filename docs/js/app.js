@@ -302,7 +302,7 @@ async function handleFavorite(petId, btn, fromModal = false) {
   const user = getCurrentUser();
   if (!user) {
     showToast('Войдите, чтобы добавить в избранное', 'warning');
-    setTimeout(() => { window.location.href = '/priyt/login'; }, 1000);
+    setTimeout(() => { window.location.href = 'login.html'; }, 1000);
     return;
   }
 
@@ -330,13 +330,13 @@ function goToAdopt(petId) {
   const user = getCurrentUser();
   if (!user) {
     showToast('Войдите, чтобы подать заявку', 'warning');
-    setTimeout(() => { window.location.href = '/priyt/login?redirect=adopt&pet=' + petId; }, 1000);
+    setTimeout(() => { window.location.href = 'login.html?redirect=adopt&pet=' + petId; }, 1000);
     return;
   }
   window.location.href = `adopt.html?pet=${petId}`;
 }
 
-function requireAuth(redirectTo = '/priyt/login') {
+function requireAuth(redirectTo = 'login.html') {
   const user = getCurrentUser();
   if (!user) { window.location.href = redirectTo; return null; }
   return user;
@@ -345,7 +345,7 @@ function requireAdmin() {
   const user = getCurrentUser();
   if (!user || user.role !== 'admin') {
     showToast('Доступ запрещён', 'error');
-    setTimeout(() => { window.location.href = '/priyt/'; }, 1000);
+    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
     return null;
   }
   return user;
@@ -354,7 +354,7 @@ function requireStaff() {
   const user = getCurrentUser();
   if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
     showToast('Доступ запрещён', 'error');
-    setTimeout(() => { window.location.href = '/priyt/'; }, 1000);
+    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
     return null;
   }
   return user;

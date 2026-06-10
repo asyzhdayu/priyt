@@ -4,6 +4,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { auth, requireAdmin } = require('../middleware/auth');
 
+// Простая проверка формата email
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
+
 function signToken(userId) {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
@@ -12,6 +18,7 @@ function signToken(userId) {
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone, address, housingType, hasOtherPets } = req.body;
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Некорректный email' });
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Заполните все обязательные поля' });
     }
@@ -75,12 +82,13 @@ router.put('/me', auth, async (req, res) => {
       freshUser.password = req.body.passwordNew;
       Object.assign(freshUser, updates);
       await freshUser.save();
-      return res.json(freshUser);
+      const safe = freshUser.toObject(); delete safe.password;
+      return res.json(safe);
     }
 
     const user = await User.findByIdAndUpdate(req.user._id, updates, {
       new: true, runValidators: true,
-    });
+    }).select('-password');
     res.json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -93,7 +101,7 @@ router.put('/me', auth, async (req, res) => {
 router.get('/me/favorites', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate('favorites').lean();
-    res.json(user.favorites);
+    res.json(user?.favorites || []);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -139,7 +147,8 @@ router.post('/admin/create', auth, requireAdmin, async (req, res) => {
 
     const user = new User({ name, email, password, phone, role });
     await user.save();
-    res.status(201).json(user);
+    const safeNew = user.toObject(); delete safeNew.password;
+    res.status(201).json(safeNew);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -152,7 +161,7 @@ router.put('/:id', auth, requireAdmin, async (req, res) => {
     const updates = {};
     allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 
-    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true });
+    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
     if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
     res.json(user);
   } catch (err) {

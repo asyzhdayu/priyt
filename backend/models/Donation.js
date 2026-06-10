@@ -21,16 +21,13 @@ const donationSchema = new mongoose.Schema({
   date:        { type: Date, default: Date.now },
 });
 
-// После сохранения доната — обновляем raisedAmount у цели
+// После сохранения доната — атомарно инкрементируем raisedAmount ($inc быстрее aggregate)
 donationSchema.post('save', async function() {
   if (this.goalId) {
     const DonationGoal = mongoose.model('DonationGoal');
-    const agg = await mongoose.model('Donation').aggregate([
-      { $match: { goalId: this.goalId } },
-      { $group: { _id: null, total: { $sum: '$amount' } } },
-    ]);
-    const total = agg[0]?.total || 0;
-    await DonationGoal.findByIdAndUpdate(this.goalId, { raisedAmount: total });
+    await DonationGoal.findByIdAndUpdate(this.goalId, {
+      $inc: { raisedAmount: this.amount },
+    });
   }
 });
 

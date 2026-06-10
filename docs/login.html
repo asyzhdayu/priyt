@@ -20,13 +20,13 @@
 
 <!-- NAVBAR -->
 <nav class="navbar">
-  <a href="/priyt/" class="navbar-brand">
+  <a href="index.html" class="navbar-brand">
     <div class="brand-icon">🐾</div>
     Приютик!
   </a>
   <div class="navbar-actions">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">🌙</button>
-    <a href="/priyt/" class="btn btn-ghost btn-sm">← На главную</a>
+    <a href="index.html" class="btn btn-ghost btn-sm">← На главную</a>
   </div>
 </nav>
 
@@ -108,7 +108,7 @@
       <div class="form-group">
         <label class="form-label" for="regPassword">Пароль <span class="required">*</span></label>
         <div style="position:relative">
-          <input type="password" class="form-control" id="regPassword" placeholder="Минимум 6 символов" autocomplete="new-password">
+          <input type="password" class="form-control" id="regPassword" placeholder="Минимум 8 символов" autocomplete="new-password">
           <button type="button" onclick="togglePwd('regPassword',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--brown-mid)">👁</button>
         </div>
         <div id="pwdStrength" style="margin-top:6px;height:4px;border-radius:2px;background:var(--cream-dark);overflow:hidden">
@@ -146,7 +146,7 @@
 
     // If already logged in, redirect
     if (getCurrentUser()) {
-      window.location.href = "/priyt/";
+      window.location.href = "index.html";
       return;
     }
 
@@ -231,9 +231,9 @@
 
       setTimeout(() => {
         if (redirect === 'adopt' && pet) {
-          window.location.href = `/priyt/adopt?pet=${pet}`;
+          window.location.href = `adopt.html?pet=${pet}`;
         } else {
-          window.location.href = "/priyt/";
+          window.location.href = "index.html";
         }
       }, 800);
     } catch (e) {
@@ -265,8 +265,8 @@
       return;
     }
 
-    if (password.length < 6) {
-      errorEl.textContent = 'Пароль должен быть не менее 6 символов';
+    if (password.length < 8) {
+      errorEl.textContent = 'Пароль должен быть не менее 8 символов';
       errorEl.style.display = 'block';
       return;
     }
@@ -292,7 +292,7 @@
       });
       setCurrentUser(user);
       showToast('Аккаунт создан! Добро пожаловать, ' + name + '! 🎉', 'success');
-      setTimeout(() => { window.location.href = "/priyt/"; }, 1000);
+      setTimeout(() => { window.location.href = "index.html"; }, 1000);
     } catch (e) {
       errorEl.textContent = e.message;
       errorEl.style.display = 'block';
@@ -307,5 +307,52 @@
     }
   });
 </script>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="navbar-brand" style="color:#fff;font-size:1.3rem">
+          <div class="brand-icon">🐾</div> Приютик!
+        </div>
+        <p>Помогаем бездомным животным найти любящие семьи с 2019 года. Каждое животное заслуживает второго шанса.</p>
+      </div>
+      <div>
+        <div class="footer-heading">Навигация</div>
+        <ul class="footer-links">
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="index.html#catalog">Питомцы</a></li>
+          <li><a href="adopt.html">Взять животное</a></li>
+          <li><a href="surrender.html">Отдать животное</a></li>
+          <li><a href="about.html">О нас</a></li>
+          <li><a href="donate.html">💛 Помочь</a></li>
+          <li><a href="volunteer.html">🤝 Волонтёрство</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-heading">Аккаунт</div>
+        <ul class="footer-links">
+          <li><a href="login.html">Войти</a></li>
+          <li><a href="login.html?tab=register">Регистрация</a></li>
+          <li><a href="profile.html">Мой профиль</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-heading">Контакты</div>
+        <div class="footer-contact">
+          📍 Москва, ул. Мясниковская, 1<br>
+          📞 +7 (911) 111-11-11<br>
+          📧 hello@priutdoma.ru<br>
+          🕐 Пн–Вс: 9:00–20:00
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Приютик!. Сделано с ❤️ для животных</span>
+      <span>🐾 Спасаем жизни каждый день</span>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

@@ -4,6 +4,7 @@ const cors        = require('cors');
 const compression = require('compression');
 const mongoose    = require('mongoose');
 const rateLimit   = require('express-rate-limit');
+const helmet      = require('helmet');
 
 const petsRouter         = require('./routes/pets');
 const usersRouter        = require('./routes/users');
@@ -14,6 +15,12 @@ const surrenderRouter    = require('./routes/surrender');
 
 const app  = express();
 const PORT = process.env.PORT || 8080;
+
+// ── Безопасность (HTTP-заголовки) ─────────────────────────────────────────────
+app.use(helmet({
+  crossOriginResourcePolicy: false,      // разрешаем загрузку фото с других доменов
+  contentSecurityPolicy: false,          // CSP настраивается отдельно если нужно
+}));
 
 // ── Сжатие ───────────────────────────────────────────────────────────────────
 app.use(compression());

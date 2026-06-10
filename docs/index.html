@@ -125,15 +125,15 @@
   <div class="container">
     <div class="stats-grid">
       <div class="stat-item reveal">
-        <span class="stat-num" data-target="247" data-suffix="+">0</span>
+        <span class="stat-num" id="storiesStat" data-suffix="+">0</span>
         <div class="stat-label">Счастливых историй</div>
       </div>
       <div class="stat-item reveal">
-        <span class="stat-num" data-target="5">0</span>
+        <span class="stat-num" id="yearsWorkStat">0</span>
         <div class="stat-label">Лет работы</div>
       </div>
       <div class="stat-item reveal">
-        <span class="stat-num" data-target="98" data-suffix="%">0</span>
+        <span class="stat-num" data-target="96" data-suffix="%">0</span>
         <div class="stat-label">Довольных семей</div>
       </div>
       <div class="stat-item reveal">
@@ -300,9 +300,9 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="navbar-brand" style="color:#fff;font-size:1.3rem">
-          <div class="brand-icon">🐾</div> Приютик!!
+          <div class="brand-icon">🐾</div> Приютик!
         </div>
-        <p>Мы помогаем бездомным животным найти любящие семьи с 2019 года. Каждое животное заслуживает второго шанса.</p>
+        <p>Помогаем бездомным животным найти любящие семьи с 2019 года. Каждое животное заслуживает второго шанса.</p>
       </div>
       <div>
         <div class="footer-heading">Навигация</div>
@@ -315,6 +315,23 @@
           <li><a href="donate.html">💛 Помочь</a></li>
           <li><a href="volunteer.html">🤝 Волонтёрство</a></li>
         </ul>
+      </div>
+      <div>
+        <div class="footer-heading">Аккаунт</div>
+        <ul class="footer-links">
+          <li><a href="login.html">Войти</a></li>
+          <li><a href="login.html?tab=register">Регистрация</a></li>
+          <li><a href="profile.html">Мой профиль</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-heading">Контакты</div>
+        <div class="footer-contact">
+          📍 Москва, ул. Мясниковская, 1<br>
+          📞 +7 (911) 111-11-11<br>
+          📧 hello@priutdoma.ru<br>
+          🕐 Пн–Вс: 9:00–20:00
+        </div>
       </div>
     </div>
     <div class="footer-bottom">
@@ -357,6 +374,13 @@
     initCounters();
     initScrollTop();
     updateFavBadge();
+
+    // Считаем годы работы динамически от года основания
+    const yearsEl = document.getElementById('yearsWorkStat');
+    if (yearsEl) {
+      const years = new Date().getFullYear() - 2019;
+      animateCounter(yearsEl, years);
+    }
 
     Promise.all([loadCatalog(true), updateHeroStats(), checkServerAwake()]);
 
@@ -412,6 +436,9 @@
     animate('heroTotal', stats.total);
     animate('heroAvail', stats.available);
     animate('heroAdopted', stats.adopted);
+    // «Счастливых историй» = кол-во усыновлённых из БД
+    const storiesEl = document.getElementById('storiesStat');
+    if (storiesEl && stats.adopted > 0) animateCounter(storiesEl, stats.adopted);
   }
 
   // ===== FILTERS =====

@@ -13,19 +13,19 @@
 
 <!-- NAVBAR -->
 <nav class="navbar">
-  <a href="/priyt/" class="navbar-brand">
+  <a href="index.html" class="navbar-brand">
     <div class="brand-icon">🐾</div>
     Приютик!
   </a>
   <ul class="navbar-nav">
-    <li><a href="/priyt/" class="nav-link">Главная</a></li>
-    <li><a href="/priyt/#catalog" class="nav-link">Питомцы</a></li>
+    <li><a href="index.html" class="nav-link">Главная</a></li>
+    <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
   </ul>
   <div class="navbar-actions">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">🌙</button>
     <div id="navProfile" style="display:none;align-items:center;gap:10px">
-      <a href="/priyt/profile" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
-      <button class="btn btn-outline btn-sm" onclick="logout();location.href='/priyt/'">Выйти</button>
+      <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-username"></span></a>
+      <button class="btn btn-outline btn-sm" onclick="logout();location.href='index.html'">Выйти</button>
     </div>
     <button class="hamburger" id="hamburger" aria-label="Открыть меню" aria-expanded="false">☰</button>
   </div>
@@ -609,12 +609,12 @@
 
   // ── Pets ─────────────────────────────────────────────────
   async function loadPets() {
-    const q  = (document.getElementById('petQ').value || '').toLowerCase();
+    const q  = (document.getElementById('petQ').value || '').trim();
     const sf = document.getElementById('petStatusF').value;
-    // limit:0 = загрузить все питомцы без пагинации
-    let pets = await getPets();
-    if (q)          pets = pets.filter(p => p.name.toLowerCase().includes(q) || p.breed.toLowerCase().includes(q));
-    if (sf !== 'all') pets = pets.filter(p => p.status === sf);
+    // Фильтрация на сервере — limit:0 отдаёт все питомцы без пагинации
+    let pets = await filterPets({ search: q, status: sf, limit: 0 });
+    // filterPets с limit:0 возвращает массив напрямую
+    if (!Array.isArray(pets)) pets = pets.pets || [];
 
     const tbody = document.getElementById('petsBody');
     if (!pets.length) {
@@ -710,29 +710,50 @@
     `).join('');
   }
 
-  async function setAppStatus(id, status) {
-    let staffComment = '';
-    if (status === 'rejected') {
-      staffComment = prompt('Причина отклонения (необязательно):') || '';
-    }
-    const apps = await getApplications();
-    const app = apps.find(x => x.id === id);
-    await updateApplication(id, { status, staffComment });
+  let _pendingRejectId = null;
 
-    if (status === 'approved' && app) {
-      if (app.type === 'adopt') {
-        showToast('✅ Усыновление одобрено — питомец зарезервирован', 'success');
-        if (app.petId) {
-          const petId = typeof app.petId === 'object' ? (app.petId._id || app.petId.id) : app.petId;
-          await updatePet(petId, { status: 'reserved' }).catch(() => {});
-        }
-      } else {
-        showToast('✅ Передача одобрена — питомец принят в приют', 'success');
-      }
-    } else if (status === 'rejected') {
-      showToast('❌ Заявка отклонена', 'info');
+  async function setAppStatus(id, status) {
+    if (status === 'rejected') {
+      // Кастомная модалка вместо prompt()
+      _pendingRejectId = id;
+      document.getElementById('rejectCommentInput').value = '';
+      openM('rejectModal');
+      return;
     }
-    loadApps(); loadStats();
+    await _applyStatus(id, status, '');
+  }
+
+  async function confirmReject() {
+    if (!_pendingRejectId) return;
+    const comment = document.getElementById('rejectCommentInput').value.trim();
+    const id = _pendingRejectId;
+    _pendingRejectId = null;
+    closeM('rejectModal');
+    await _applyStatus(id, 'rejected', comment);
+  }
+
+  async function _applyStatus(id, status, staffComment) {
+    try {
+      const apps = await getApplications();
+      const app = apps.find(x => x.id === id);
+      await updateApplication(id, { status, staffComment });
+      if (status === 'approved' && app) {
+        if (app.type === 'adopt') {
+          showToast('✅ Усыновление одобрено — питомец зарезервирован', 'success');
+          if (app.petId) {
+            const petId = typeof app.petId === 'object' ? (app.petId._id || app.petId.id) : app.petId;
+            await updatePet(petId, { status: 'reserved' }).catch(() => {});
+          }
+        } else {
+          showToast('✅ Передача одобрена — питомец принят в приют', 'success');
+        }
+      } else if (status === 'rejected') {
+        showToast('❌ Заявка отклонена', 'info');
+      } else if (status === 'reviewing') {
+        showToast('🔍 Заявка взята в работу', 'info');
+      }
+      loadApps(); loadStats();
+    } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
   }
 
   async function openAppDetail(id) {
@@ -1216,5 +1237,29 @@
   </div>
 </div>
 
+
+<!-- REJECT MODAL -->
+<div class="moverlay" id="rejectModal">
+  <div class="mbox" style="max-width:420px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:700;font-size:1.05rem">❌ Отклонить заявку</div>
+      <button class="mclose" onclick="closeM('rejectModal')" aria-label="Закрыть">✕</button>
+    </div>
+    <p style="font-size:.88rem;color:var(--brown-mid);margin-bottom:16px">
+      Укажите причину отклонения — она будет отправлена заявителю по email.
+    </p>
+    <div class="form-group">
+      <label class="form-label">Причина <span style="color:var(--brown-mid);font-weight:400">(необязательно)</span></label>
+      <textarea class="form-control" id="rejectCommentInput" rows="3"
+        placeholder="Например: не подходящие условия проживания для крупной собаки..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeM('rejectModal')">Отмена</button>
+      <button class="btn" style="background:var(--error);color:#fff;border:none" onclick="confirmReject()">
+        ❌ Подтвердить отклонение
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -3,10 +3,16 @@ const router  = express.Router();
 const { Donation, DonationGoal } = require('../models/Donation');
 const { auth, requireStaff }     = require('../middleware/auth');
 
+// Простая проверка формата email
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
+
 // GET /api/donations/goals — все активные цели
 router.get('/goals', async (req, res) => {
   try {
-    const goals = await DonationGoal.find({ active: true }).sort({ createdAt: -1 });
+    const goals = await DonationGoal.find({ active: true }).sort({ createdAt: -1 }).lean();
     res.json(goals);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -14,7 +20,7 @@ router.get('/goals', async (req, res) => {
 // GET /api/donations/goals/all — все цели (admin)
 router.get('/goals/all', auth, requireStaff, async (req, res) => {
   try {
-    const goals = await DonationGoal.find().sort({ createdAt: -1 });
+    const goals = await DonationGoal.find().sort({ createdAt: -1 }).lean();
     res.json(goals);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -60,7 +66,7 @@ router.get('/stats', async (req, res) => {
 // GET /api/donations — список (staff)
 router.get('/', auth, requireStaff, async (req, res) => {
   try {
-    const donations = await Donation.find().populate('goalId').sort({ date: -1 });
+    const donations = await Donation.find().populate('goalId', 'title emoji').sort({ date: -1 }).lean();
     res.json(donations);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -71,6 +77,9 @@ router.post('/', async (req, res) => {
     const { donorName, donorEmail, amount, goalId, comment, anonymous } = req.body;
     if (!donorName || !donorEmail || !amount) {
       return res.status(400).json({ error: 'Заполните все обязательные поля' });
+    }
+    if (!isValidEmail(donorEmail)) {
+      return res.status(400).json({ error: 'Некорректный email' });
     }
     if (amount < 1 || amount > 1_000_000) {
       return res.status(400).json({ error: 'Сумма должна быть от 1 до 1 000 000 ₽' });

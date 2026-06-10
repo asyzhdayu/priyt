@@ -14,7 +14,15 @@ async function auth(req, res, next) {
     req.user = user;
     next();
   } catch (err) {
-    res.status(401).json({ error: 'Токен недействителен или истёк' });
+    // JWT-ошибки → 401. Всё остальное (БД, сеть) → 500
+    // Иначе при кратком сбое MongoDB пользователь будет разлогинен
+    const isJwtError = err.name === 'JsonWebTokenError'
+      || err.name === 'TokenExpiredError'
+      || err.name === 'NotBeforeError';
+    if (isJwtError) {
+      return res.status(401).json({ error: 'Токен недействителен или истёк' });
+    }
+    next(err); // DB/другие ошибки → глобальный обработчик → 500
   }
 }
 

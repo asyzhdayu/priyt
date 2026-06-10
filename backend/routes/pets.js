@@ -94,7 +94,11 @@ router.get('/:id', async (req, res) => {
 // POST /api/pets (staff)
 router.post('/', auth, requireStaff, async (req, res) => {
   try {
-    const pet = new Pet(req.body);
+    // Проверка размера фото (base64 > 2MB — слишком большое)
+    if (req.body.photo && req.body.photo.length > 2_000_000) {
+      return res.status(400).json({ error: 'Фото слишком большое. Максимальный размер — 1.5 МБ' });
+    }
+        const pet = new Pet(req.body);
     await pet.save();
     res.status(201).json(pet);
   } catch (err) {
@@ -105,7 +109,11 @@ router.post('/', auth, requireStaff, async (req, res) => {
 // PUT /api/pets/:id (staff)
 router.put('/:id', auth, requireStaff, async (req, res) => {
   try {
-    const pet = await Pet.findByIdAndUpdate(req.params.id, req.body, {
+    // Проверка размера фото (base64 > 2MB — слишком большое)
+    if (req.body.photo && req.body.photo.length > 2_000_000) {
+      return res.status(400).json({ error: 'Фото слишком большое. Максимальный размер — 1.5 МБ' });
+    }
+        const pet = await Pet.findByIdAndUpdate(req.params.id, req.body, {
       new: true, runValidators: true,
     });
     if (!pet) return res.status(404).json({ error: 'Питомец не найден' });

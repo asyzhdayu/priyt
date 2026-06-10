@@ -69,6 +69,12 @@ const Application = require('../models/Application');
 const Pet         = require('../models/Pet');
 const { auth, optionalAuth, requireStaff } = require('../middleware/auth');
 
+// Простая проверка формата email
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
+
 
 // POST /api/applications
 router.post('/', optionalAuth, async (req, res) => {
@@ -77,6 +83,9 @@ router.post('/', optionalAuth, async (req, res) => {
 
     if (!petId || !applicantName || !applicantEmail || !applicantPhone) {
       return res.status(400).json({ error: 'Заполните все обязательные поля' });
+    }
+    if (!isValidEmail(applicantEmail)) {
+      return res.status(400).json({ error: 'Некорректный email заявителя' });
     }
 
     // Проверка — питомец вообще существует и доступен
@@ -148,7 +157,8 @@ router.get('/:id', auth, async (req, res) => {
   try {
     const app = await Application.findById(req.params.id)
       .populate('petId')
-      .populate('userId', 'name email phone');
+      .populate('userId', 'name email phone')
+      .lean();
     if (!app) return res.status(404).json({ error: 'Заявка не найдена' });
 
     const isOwner = app.userId && app.userId._id?.toString() === req.user._id.toString();
