@@ -392,6 +392,12 @@
 
     document.getElementById('searchInput')?.addEventListener('input', debounce(() => { resetPagination(); applyFilters(); }, 400));
     document.getElementById('searchInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') { resetPagination(); applyFilters(); } });
+
+    // Debounce для select-фильтров — 200мс чтобы не слать запрос при быстром переборе
+    const debouncedFilter = debounce(() => { resetPagination(); applyFilters(); }, 200);
+    ['statusFilter','genderFilter','sizeFilter','sortFilter'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', debouncedFilter);
+    });
   });
 
   // ===== SERVER WAKE CHECK =====

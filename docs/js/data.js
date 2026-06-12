@@ -10,7 +10,14 @@ function cacheGet(key) {
   if (Date.now() - entry.ts > CACHE_TTL) { _cache.delete(key); return null; }
   return entry.data;
 }
-function cacheSet(key, data) { _cache.set(key, { data, ts: Date.now() }); }
+function cacheSet(key, data) {
+  // Ограничение: не более 150 записей в кеше
+  if (_cache.size >= 150) {
+    const oldest = [..._cache.entries()].sort((a,b) => a[1].ts - b[1].ts)[0];
+    if (oldest) _cache.delete(oldest[0]);
+  }
+  _cache.set(key, { data, ts: Date.now() });
+}
 function cacheClear(prefix) {
   for (const key of _cache.keys()) {
     if (!prefix || key.startsWith(prefix)) _cache.delete(key);

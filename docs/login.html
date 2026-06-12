@@ -220,6 +220,8 @@
       return;
     }
 
+    const loginBtn = document.getElementById('loginSubmitBtn');
+    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Входим...'; }
     try {
       const user = await loginUser(email, password);
       setCurrentUser(user);
@@ -283,6 +285,8 @@
       return;
     }
 
+    const regBtn = document.getElementById('registerSubmitBtn');
+    if (regBtn) { regBtn.disabled = true; regBtn.textContent = 'Регистрируем...'; }
     try {
       const user = await registerUser({
         name, email, password, phone,

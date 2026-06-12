@@ -330,10 +330,14 @@
     const email = document.getElementById('volEmail').value.trim();
     const phone = document.getElementById('volPhone').value.trim();
     const age   = document.getElementById('volAge').value;
+    const ageNum = age ? parseInt(age) : null;
 
     if (!name)                          { showToast('Введи своё имя', 'error'); return; }
     if (!email || !validateEmail(email)){ showToast('Введи корректный email', 'error'); return; }
     if (!phone || !validatePhone(phone)){ showToast('Введи телефон', 'error'); return; }
+    if (ageNum !== null && (ageNum < 14 || ageNum > 99)) {
+      showToast('Возраст должен быть от 14 до 99 лет', 'error'); return;
+    }
     if (!selectedSkills.length)         { showToast('Выбери хотя бы одно направление', 'error'); return; }
 
     const btn = document.getElementById('volSubmitBtn');
@@ -342,7 +346,7 @@
     try {
       await submitVolunteer({
         name, email, phone,
-        age: age ? parseInt(age) : null,
+        age: ageNum,
         skills:     selectedSkills,
         schedule:   selectedSchedule,
         experience: document.getElementById('volExperience').value.trim(),

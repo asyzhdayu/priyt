@@ -5,6 +5,7 @@ const compression = require('compression');
 const mongoose    = require('mongoose');
 const rateLimit   = require('express-rate-limit');
 const helmet      = require('helmet');
+const morgan      = require('morgan');
 
 const petsRouter         = require('./routes/pets');
 const usersRouter        = require('./routes/users');
@@ -17,6 +18,9 @@ const app  = express();
 const PORT = process.env.PORT || 8080;
 
 // ── Безопасность (HTTP-заголовки) ─────────────────────────────────────────────
+// ── Логирование запросов ─────────────────────────────────────────────────────
+app.use(morgan('dev'));
+
 app.use(helmet({
   crossOriginResourcePolicy: false,      // разрешаем загрузку фото с других доменов
   contentSecurityPolicy: false,          // CSP настраивается отдельно если нужно

@@ -618,7 +618,11 @@
 
     const tbody = document.getElementById('petsBody');
     if (!pets.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--brown-mid)">Ничего не найдено</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--brown-mid)">
+        <div style="font-size:2rem;margin-bottom:10px">🐾</div>
+        <div style="font-weight:600;margin-bottom:8px">Питомцы не найдены</div>
+        <div style="font-size:.85rem">Измени фильтры или <button class="btn btn-primary btn-sm" onclick="openPetForm()" style="margin-left:6px">+ Добавить питомца</button></div>
+      </td></tr>`;
       return;
     }
     tbody.innerHTML = pets.map(p => `
@@ -674,7 +678,11 @@
 
     const tbody = document.getElementById('appsBody');
     if (!apps.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--brown-mid)">Заявок нет</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--brown-mid)">
+        <div style="font-size:2rem;margin-bottom:10px">📋</div>
+        <div style="font-weight:600">Заявок не найдено</div>
+        <div style="font-size:.85rem;margin-top:6px">Попробуй изменить фильтр или дождись новых заявок</div>
+      </td></tr>`;
       return;
     }
     const badge = document.getElementById('appsBadge');
@@ -712,33 +720,38 @@
 
   let _pendingRejectId = null;
 
-  async function setAppStatus(id, status) {
+  let _pendingRejectType = null;
+
+  async function setAppStatus(id, status, appType = 'adopt') {
     if (status === 'rejected') {
-      // Кастомная модалка вместо prompt()
-      _pendingRejectId = id;
+      _pendingRejectId   = id;
+      _pendingRejectType = appType;
       document.getElementById('rejectCommentInput').value = '';
       openM('rejectModal');
       return;
     }
-    await _applyStatus(id, status, '');
+    await _applyStatus(id, status, '', appType);
   }
 
   async function confirmReject() {
     if (!_pendingRejectId) return;
     const comment = document.getElementById('rejectCommentInput').value.trim();
-    const id = _pendingRejectId;
-    _pendingRejectId = null;
+    const id   = _pendingRejectId;
+    const type = _pendingRejectType || 'adopt';
+    _pendingRejectId = null; _pendingRejectType = null;
     closeM('rejectModal');
-    await _applyStatus(id, 'rejected', comment);
+    await _applyStatus(id, 'rejected', comment, type);
   }
 
-  async function _applyStatus(id, status, staffComment) {
+  async function _applyStatus(id, status, staffComment, appType = 'adopt') {
+    // Блокируем кнопки на время запроса
+    const approveBtn = document.getElementById('approveBtn_' + id);
+    if (approveBtn) { approveBtn.disabled = true; approveBtn.textContent = '...'; }
     try {
-      const apps = await getApplications();
-      const app = apps.find(x => x.id === id);
       await updateApplication(id, { status, staffComment });
-      if (status === 'approved' && app) {
-        if (app.type === 'adopt') {
+      if (status === 'approved') {
+        const app = { type: appType }; // не тянем всю коллекцию
+        if (appType === 'adopt') {
           showToast('✅ Усыновление одобрено — питомец зарезервирован', 'success');
           if (app.petId) {
             const petId = typeof app.petId === 'object' ? (app.petId._id || app.petId.id) : app.petId;
@@ -753,7 +766,10 @@
         showToast('🔍 Заявка взята в работу', 'info');
       }
       loadApps(); loadStats();
-    } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
+    } catch(e) {
+      showToast('Ошибка: ' + e.message, 'error');
+      if (approveBtn) { approveBtn.disabled = false; approveBtn.textContent = '✅'; }
+    }
   }
 
   async function openAppDetail(id) {
@@ -840,9 +856,9 @@
               : '🏡&nbsp; Передача — животное принимается в приют'}
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-sm" style="background:${approveColor};color:#fff;border:none;padding:10px 20px;font-weight:700;border-radius:8px" onclick="setAppStatus('${a.id}','approved');closeM('appModal')">${approveLabel}</button>
-            ${a.status !== 'reviewing' ? `<button class="btn btn-ghost btn-sm" onclick="setAppStatus('${a.id}','reviewing');closeM('appModal')">🔍 Взять в работу</button>` : ''}
-            <button class="btn btn-sm" style="background:rgba(214,64,64,.1);color:var(--error);border:1.5px solid var(--error);border-radius:8px" onclick="setAppStatus('${a.id}','rejected');closeM('appModal')">❌ Отклонить</button>
+            <button class="btn btn-sm" style="background:${approveColor};color:#fff;border:none;padding:10px 20px;font-weight:700;border-radius:8px" onclick="setAppStatus('${a.id}','approved','${a.type}');closeM('appModal')" id="approveBtn_${a.id}">${approveLabel}</button>
+            ${a.status !== 'reviewing' ? `<button class="btn btn-ghost btn-sm" onclick="setAppStatus('${a.id}','reviewing','${a.type}');closeM('appModal')">🔍 Взять в работу</button>` : ''}
+            <button class="btn btn-sm" style="background:rgba(214,64,64,.1);color:var(--error);border:1.5px solid var(--error);border-radius:8px" onclick="setAppStatus('${a.id}','rejected','${a.type}');closeM('appModal')">❌ Отклонить</button>
           </div>
         </div>
       `;

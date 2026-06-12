@@ -36,9 +36,12 @@ const petSchema = new mongoose.Schema(
 );
 
 // Индексы для быстрого поиска и фильтрации
-petSchema.index({ status: 1 });
-petSchema.index({ species: 1 });
-petSchema.index({ featured: 1 });
-petSchema.index({ name: 'text', breed: 'text', description: 'text' });
+petSchema.index({ dateAdded: -1 });                    // сортировка newest/oldest
+petSchema.index({ status: 1, dateAdded: -1 });          // каталог: статус + сортировка
+petSchema.index({ status: 1, species: 1 });             // каталог: статус + вид
+petSchema.index({ status: 1, gender: 1 });              // каталог: статус + пол
+petSchema.index({ status: 1, size: 1 });                // каталог: статус + размер
+petSchema.index({ featured: 1, status: 1 });            // рекомендуемые
+petSchema.index({ name: 'text', breed: 'text', description: 'text' }); // поиск
 
 module.exports = mongoose.model('Pet', petSchema);

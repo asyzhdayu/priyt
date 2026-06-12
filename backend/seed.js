@@ -40,6 +40,10 @@ async function seed() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ MongoDB подключена');
+    console.log('⚠️  ВНИМАНИЕ: будут удалены все данные из коллекций pets, users, applications, donationgoals!');
+    // Даём 3 секунды на отмену (Ctrl+C)
+    await new Promise(r => setTimeout(r, 3000));
+    console.log('🗑️  Начинаем очистку...');
 
     await Promise.all([
       Pet.deleteMany({}),

@@ -110,17 +110,20 @@ router.get('/me/favorites', auth, async (req, res) => {
 // POST /api/users/me/favorites/:petId — переключить (добавить/убрать)
 router.post('/me/favorites/:petId', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
     const petId = req.params.petId;
-    const idx = user.favorites.findIndex(f => f.toString() === petId);
+    // Читаем текущее состояние чтобы понять — добавляем или убираем
+    const check = await User.findById(req.user._id).select('favorites').lean();
+    const isAlready = check.favorites.some(f => f.toString() === petId);
 
-    if (idx === -1) {
-      user.favorites.push(petId);
-    } else {
-      user.favorites.splice(idx, 1);
-    }
-    await user.save();
-    res.json({ added: idx === -1, favorites: user.favorites });
+    // Атомарные операции — нет гонки данных при двойном клике
+    const update = isAlready
+      ? { $pull:     { favorites: petId } }
+      : { $addToSet: { favorites: petId } };
+
+    const updated = await User.findByIdAndUpdate(req.user._id, update, { new: true })
+      .select('favorites').lean();
+
+    res.json({ added: !isAlready, favorites: updated.favorites });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

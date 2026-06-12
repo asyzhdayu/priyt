@@ -458,6 +458,37 @@
       errorEl.style.display = 'block';
     }
   }
+
+  // ── Сохранение прогресса формы ──────────────────────────────────────────────
+  const PROGRESS_KEY = 'adopt_form_progress';
+
+  function saveFormProgress() {
+    const data = {
+      name:       document.getElementById('aName')?.value || '',
+      email:      document.getElementById('aEmail')?.value || '',
+      phone:      document.getElementById('aPhone')?.value || '',
+      address:    document.getElementById('aAddress')?.value || '',
+      housing:    document.getElementById('aHousing')?.value || '',
+      experience: document.getElementById('aExperience')?.value || '',
+    };
+    sessionStorage.setItem(PROGRESS_KEY, JSON.stringify(data));
+  }
+
+  function restoreFormProgress() {
+    try {
+      const saved = sessionStorage.getItem(PROGRESS_KEY);
+      if (!saved) return;
+      const data = JSON.parse(saved);
+      const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      set('aName', data.name); set('aEmail', data.email); set('aPhone', data.phone);
+      set('aAddress', data.address); set('aHousing', data.housing);
+      set('aExperience', data.experience);
+    } catch(e) {}
+  }
+
+  function clearFormProgress() {
+    sessionStorage.removeItem(PROGRESS_KEY);
+  }
 </script>
 
 <!-- FOOTER -->

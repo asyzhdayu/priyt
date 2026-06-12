@@ -76,16 +76,19 @@
     .fav-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .app-item { padding: 16px 14px; gap: 12px; }
     .app-icon { font-size: 1.6rem; }
-    /* Скрываем аватар и имя на мобиле в сайдбаре — уже есть в navbar */
-    .profile-avatar, .profile-name, .profile-email, .profile-role { display: none; }
+    /* Скрываем аватар и имя на мобиле — !important нужен т.к. base CSS ставит display:flex после этого правила */
+    .profile-avatar { display: none !important; }
+    .profile-name   { display: none !important; }
+    .profile-email  { display: none !important; }
+    .profile-role   { display: none !important; }
     /* Навбар вкладок занимает всю ширину */
     .sidebar-nav { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: 6px; margin-top: 0; padding-bottom: 2px; }
     .sidebar-link {
       flex: 1 1 auto;
       text-align: center;
       border-radius: 50px;
-      padding: 9px 14px;
-      font-size: .82rem;
+      padding: 8px 10px;
+      font-size: .8rem;
       border: 1.5px solid var(--cream-dark);
       background: var(--white);
       color: var(--brown);
@@ -102,9 +105,11 @@
     .sidebar-nav hr, .sidebar-nav .logout-btn { display: none; }
     /* Выйти переносим в футер мобиле */
     .mobile-logout { display: block !important; }
-    .profile-sidebar { border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
-      border-top: none !important; padding: 12px 16px !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06) !important; }
+    .profile-sidebar {
+      border-radius: var(--radius-lg) !important;
+      padding: 12px 16px !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06) !important;
+    }
   }
   @media (max-width: 480px) {
     .sidebar-nav { flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; margin-top: 16px; }
@@ -426,14 +431,11 @@
       return;
     }
 
-    // API может вернуть объекты питомцев или просто id-строки
-    let pets;
-    if (typeof favsRaw[0] === 'object' && favsRaw[0] !== null) {
-      pets = favsRaw.filter(Boolean);
-    } else {
-      pets = (await Promise.all(favsRaw.map(id => getPetById(id).catch(() => null)))).filter(Boolean);
-    }
-    const favIds = favsRaw; // для совместимости ниже
+    // getFavorites() возвращает полные объекты питомцев через populate
+    // Поддержка обеих форм для надёжности
+    const pets = favsRaw
+      .map(item => typeof item === 'object' && item !== null ? item : null)
+      .filter(Boolean);
 
     if (pets.length === 0) {
       list.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❤️</div><h3>Питомцы не найдены</h3></div>`;

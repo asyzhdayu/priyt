@@ -2096,3 +2096,26 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 @media (max-width: 400px) {
   .vol-form-wrap .skills-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── Navbar переполнение на маленьких экранах (<480px) ───────────────────── */
+@media (max-width: 480px) {
+  /* Кнопка «Выйти» — только текст, без фона */
+  #navProfile .btn-outline { padding: 5px 8px; font-size: .72rem; }
+
+  /* «Войти» и «Регистрация» — компактнее */
+  #navAuth .btn { padding: 5px 8px; font-size: .72rem; }
+
+  /* «Админ» — только иконка на самых маленьких */
+  #navAdmin { padding: 6px 10px; font-size: .72rem; }
+}
+
+@media (max-width: 380px) {
+  /* Скрываем текст кнопки «Выйти», оставляем только иконку */
+  #navProfile .btn-outline .btn-text { display: none; }
+  /* Уменьшаем отступы навбара */
+  .navbar-actions { gap: 4px; }
+  /* Бейдж избранного — только иконка */
+  #navFavLink span:first-child { width: 30px; height: 30px; font-size: 1rem; }
+  /* Профиль кнопка */
+  #navProfile .btn-ghost { padding: 5px 7px; font-size: .75rem; }
+}
