@@ -29,9 +29,9 @@
     <li><a href="index.html" class="nav-link">Главная</a></li>
     <li><a href="index.html#catalog" class="nav-link">Питомцы</a></li>
     <li><a href="adopt.html" class="nav-link active">Взять животное</a></li>
+    <li><a href="donate.html" class="nav-link">Помочь</a></li>
+    <li><a href="volunteer.html" class="nav-link">Волонтёрство</a></li>
     <li><a href="about.html" class="nav-link">О нас</a></li>
-    <li><a href="donate.html" class="nav-link">💛 Помочь</a></li>
-    <li><a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a></li>
   </ul>
   <div class="navbar-actions">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">🌙</button>
@@ -50,9 +50,9 @@
   <a href="index.html" class="nav-link">🏠 Главная</a>
   <a href="index.html#catalog" class="nav-link">🐾 Питомцы</a>
   <a href="adopt.html" class="nav-link">❤️ Взять животное</a>
+  <a href="donate.html" class="nav-link">Помочь</a>
+  <a href="volunteer.html" class="nav-link">Волонтёрство</a>
   <a href="about.html" class="nav-link">ℹ️ О нас</a>
-  <a href="donate.html" class="nav-link">💛 Помочь</a>
-  <a href="volunteer.html" class="nav-link">🤝 Волонтёрство</a>
   <a href="profile.html" class="nav-link">👤 Мой профиль</a>
 </div>
 
@@ -254,8 +254,7 @@
   let selectedPetId = null;
   let currentStep = 1;
 
-  document.addEventListener('DOMContentLoaded', () => {
-    
+  document.addEventListener('DOMContentLoaded', async () => {
     initNavbar();
 
     // Pre-fill user info
@@ -277,19 +276,23 @@
       }
     }
 
-    // Check if coming from pet card
+    // Check if coming from pet card — если питомец выбран заранее
+    // (нажали «Взять домой» на карточке), сразу переходим на шаг 2.
+    // Если пришли просто по вкладке «Взять животное» — остаёмся
+    // на шаге 1 и показываем список для выбора.
     const params = new URLSearchParams(window.location.search);
     const petId = params.get('pet');
     if (petId) {
-      selectPet(petId);
+      await selectPet(petId);
+      goToStep(2);
+    } else {
+      // Load all available pets in search results
+      searchPets('');
     }
-
-    // Load all available pets in search results
-    searchPets('');
   });
 
   async function searchPets(query) {
-    const pets = await filterPets({ search: query, status: 'available', sort: 'name' });
+    const pets = await filterPets({ search: query, status: 'available', sort: 'name', limit: 0 });
     const container = document.getElementById('petSearchResults');
 
     if (pets.length === 0) {
