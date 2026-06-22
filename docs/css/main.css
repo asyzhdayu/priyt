@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-/* ===== CSS VARIABLES ===== */
 :root {
   --cream: #FDF6EC;
   --cream-dark: #F5EAD6;
@@ -1277,10 +1276,17 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 
 /* ===== FOOTER ===== */
 .footer {
-  background: var(--espresso);
+  /* Хардкодим тёмный цвет — футер ВСЕГДА тёмный, не меняется в dark-theme */
+  background: #1A0F0A;
   color: rgba(255,255,255,0.8);
   padding: 60px 0 32px;
 }
+
+/* Отдельный override для .footer-links a цвета */
+.footer-links a { color: rgba(255,255,255,0.6); }
+.footer-links a:hover { color: #fff; opacity: 1; }
+.footer-contact { color: rgba(255,255,255,0.6); }
+.footer-brand p { color: rgba(255,255,255,0.6); }
 
 .footer-grid {
   display: grid;
